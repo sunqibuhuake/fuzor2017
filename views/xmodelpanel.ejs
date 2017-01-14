@@ -1,0 +1,107 @@
+<%- include('global/xheader') %>
+<div class="content-page">
+    <!-- Start content -->
+    <div class="content">
+        <div class="container">
+
+            <!-- Page-Title -->
+            <div class="row">
+                <div class="col-sm-12">
+                    <h4 class="page-title">模型管理</h4>
+                    <ol class="breadcrumb">
+                        <li>
+                            <a href="#">模型</a>
+                        </li>
+                        <li class="active">
+                            模型管理
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="row">
+                            <div class="col-md-6">
+                                <div class="panel panel-default panel-border">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title"><%= model.name %></h3>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="button-list">
+                                            <a href="fuzor://http://7xsj6b.com1.z0.glb.clouddn.com/c.che">
+                                                <button type="button" class="btn btn-default btn-rounded waves-effect waves-light">
+                                                激活Fuzor
+                                                </button>
+                                            </a>
+                                            <button id="getModelData" type="button" class="btn btn-primary btn-rounded waves-effect waves-light">获取数据</button>
+                                            <button id="saveData" type="button" class="btn btn-primary btn-rounded waves-effect waves-light">保存数据</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="panel panel-border panel-custom">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title">数据详情</h3>
+                                    </div>
+                                    <div class="panel-body">
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <form method="post" action="/models/save" class="form-horizontal" role="form">
+
+
+                                                    <div class="form-group">
+                                                        <label class="col-md-2 control-label">模型介绍</label>
+                                                        <div class="col-md-10">
+                                                            <textarea class="form-control" rows="5" id="model_data" name="data"></textarea>
+                                                        </div>
+                                                    </div>
+
+
+                                                    <input style="display: none;" id="model" name="model_id" value="<%= model._id %>">
+
+                                                    <button type="submit" id="realSubmit" class="btn btn-success"
+                                                            style="display: none;">确认添加
+                                                    </button>
+                                                </form>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+            </div>
+        </div> <!-- container -->
+
+    </div> <!-- content -->
+ 
+</div>
+<script src="/fuzor/fuzor.js"></script>
+<script src="/fuzor/x2j.js"></script>
+<script>
+    var fuzor = new Fuzor()
+
+    $('#getModelData').click(function() {
+
+        fuzor.getModelData(function(data) {
+
+            //console.log(data)
+            $('#model_data').val(JSON.stringify(data))
+        })
+    })
+
+    $('#saveData').click(function() {
+        $('#realSubmit').click()
+    })
+
+
+</script>
+
+
+
+<%- include('global/xfooter') %>

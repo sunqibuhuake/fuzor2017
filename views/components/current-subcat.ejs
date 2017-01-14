@@ -1,0 +1,27 @@
+<section class="box ">
+    <header class="panel_header">
+        <h2 class="title pull-left">已有子类</h2>
+        <div class="actions panel_actions pull-right">
+        </div>
+    </header>
+    <div class="content-body">
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+
+                <% subcats.forEach(function(subcat) {%>
+
+                <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
+                    <div class="tile-counter bg-primary">
+                        <div class="content">
+                            <h2 class=" " ><%= subcat.name %></h2>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <% })%>
+
+            </div>
+        </div>
+    </div>
+</section>

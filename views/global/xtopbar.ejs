@@ -1,0 +1,40 @@
+<style>
+    .logo {
+        color: #ffffff !important;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: .05em;
+        line-height: 60px;
+        text-transform: uppercase;
+    }
+</style>
+<div class="topbar">
+
+    <!-- LOGO -->
+    <div class="topbar-left">
+        <div class="text-center">
+            <a href="/" class="logo"><span>BIMVR虚拟现实教学仿真系统</span></a>
+        </div>
+    </div>
+
+    <!-- Button mobile view to collapse sidebar menu -->
+    <div class="navbar navbar-default" role="navigation">
+        <div class="container">
+            <div class="">
+                <ul class="nav navbar-nav navbar-right pull-right">
+                    <li class="hidden-xs">
+                        <a href="/management" class="right-bar-toggle waves-effect waves-light"><i class="icon-settings"></i></a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="" class="dropdown-toggle profile" data-toggle="dropdown" aria-expanded="true"><img src="/img/<%= user.avatar %>" alt="user-img" class="img-circle"> </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:void(0)"><i class="ti-user m-r-5"></i>个人资料</a></li>
+                            <li><a href="/signout"><i class="ti-power-off m-r-5"></i> 注销</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </div>
+</div>

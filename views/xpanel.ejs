@@ -1,0 +1,330 @@
+<%- include('panel/header') %>
+
+<div class="content-page">
+    <div class="content">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card-box">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <% if(!model.dataSaved ) { %>
+                                <%- include('panel/fetch_data_menu.ejs') %>
+                                <% } %>
+                                <%- include('panel/info.ejs') %>
+
+                            </div>
+                            <div class="col-md-4">
+                                <%- include('panel/control') %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- container -->
+
+    </div> <!-- content -->
+
+</div>
+
+<%- include('panel/hide_input') %>
+<%- include('panel/modal_share') %>
+<%- include('global/xfooter') %>
+
+<script>
+
+
+    initMenuAndContent();
+
+    function initMenuAndContent() {
+
+        var hash = getHash();
+
+        if (!hash) return;
+
+        var levels = hash.split('-');
+
+        var objectId = recursionExpandMenu($('#sidebar-menu ul'), levels);
+
+        var modelId = $('#model-id-container').val();
+
+        setObjectId(objectId);
+
+        fetchContentData(modelId, objectId)
+
+    }
+
+    function recursionExpandMenu($ul, levels) {
+
+        if (levels.length === 0) return;
+
+        var result = expandMenu($ul, levels[0]);
+
+        levels.splice(0, 1);
+
+        if (!result) return;
+
+        if (result.objectId) return result.objectId;
+
+        return recursionExpandMenu(result.$ul, levels);
+
+    }
+
+    function expandMenu($ul, level) {
+
+        var $li = $($ul.children('.menu-item')[level]);
+
+        if (!$li) return null;
+
+        var $a = $li.children('a').addClass('subdrop');
+
+        return {
+            $ul: $li.children('ul').css('display', 'block'),
+            objectId: $a.data('id')
+        }
+
+    }
+
+    $('#sidebar-menu').click(function (e) {
+
+        var tg = $(e.target || e.srcElement), objectId, modelId;
+
+        if (!tg.hasClass('real-component')) return;
+
+        objectId = tg.data('id');
+
+        modelId = $('#model-id-container').val();
+
+        if (!objectId || !modelId) return;
+
+
+        setObjectId(objectId);
+
+        fetchContentData(modelId, objectId)
+
+
+    })
+
+    function setFocusBtn(id) {
+
+        var s = 'fuzor://http://oaq9t2661.bkt.clouddn.com/o_1b36jnkd511tg13sm2nf1cm63167.che?focusobject=__fuzor_objectid:4448584661131714157&amp;selectobject=__fuzor&#10;_objectid:4448584661131714157'
+
+        var btn = $('#focus_model')
+
+        var base = btn.data('base')
+
+        var href = base + '?focusobject=__fuzor_objectid:' + id + '&selectobject=__fuzor_objectid:' + id;
+
+        btn.attr('href', href)
+
+
+    }
+    function setObjectId(id) {
+
+        $('#view-save-btn2').data('objectid', id)
+        $('#component-attachment-upload-btn').data('objectid', id)
+        //$('#component-share-btn').data('link', window.location.href)
+        $('#current-object-id-container').val(id);
+        $('#component-attachment-upload-btn').data('objectid', id)
+        setFocusBtn(id)
+
+    }
+
+    function fetchContentData(modelId, objectId) {
+
+        if (!modelId || !objectId) return;
+
+        $.ajax({
+            url: '/panel/detail/' + modelId + '/' + objectId,
+            success: function (data) {
+
+                if (data.message === 'error') return;
+
+                if (data.data.attachments) {
+
+                    fillAttachList(data.data.attachments)
+                }
+
+                if (data.data.info) {
+                    fillInfoList(data.data.info)
+                } else {
+
+                    /*
+                     * todo 更换数据
+                     * */
+                    fillInfoList(filterLocalData(objectId, LOCAL_DATA))
+                }
+
+            },
+            error: function (xhr, status, err) {
+
+            }
+        })
+
+    }
+
+    function filterLocalData(id, data) {
+
+        var filtered = data.filter(function (obj) {
+            return obj.__fuzor_objectid == id
+        })
+
+        if (filtered.length > 0) {
+            return filtered[0]
+        } else {
+            return {}
+        }
+    }
+
+    function fillInfoList(info) {
+
+        var usefulKeys = Object.keys(info).filter(function (key) {
+            return !/__/.test(key)
+        })
+
+        var detailsTBody = usefulKeys.map(function (key, index) {
+            return '<tr><th scope="row">' + (index + 1) + '</th>' +
+                    '<td>' + key + '</td>' +
+                    '<td>' + info[key] + '</td></tr>'
+        });
+
+        $('#component-details').html(detailsTBody);
+
+    }
+
+    function fillAttachList(attachments) {
+
+        var attachmentTBody = attachments.map(function (attachment) {
+            return '<tr>' +
+                    '<td><img src="' + (attachment.logo) + '" class="thumb-sm" alt=""> </td>' +
+                    '<td>' + attachment.originName + '</td>' +
+                    '<td>' + getFileType(attachment.type) + '</td>' +
+                    '<td>' +
+                    '<b>' + attachment.size + '</b>' +
+                    '</td>' +
+                    '<td>' +
+                    attachment.date +
+                    '</td>' +
+                    '<td>' +
+                    getActionsHTML(attachment.type) +
+                    '</td>' +
+                    '</tr>'
+        })
+
+        $('#attachment-tbody').html(attachmentTBody);
+    }
+
+    function getActionsHTML(extension) {
+
+        var actions = getFileActions(extension);
+
+        var icons = {
+            download: 'ti ti-download',
+            preview: 'ti ti-eye'
+        }
+
+        return actions.map(function (action) {
+            return '<a href="#" class="table-action-btn"><i class="ti ti-' + icons[action] + '" style="font-size: 14px;"></i></a>'
+        }).join('')
+
+    }
+
+    function getFileActions(extension) {
+
+        var actions = ['download'];
+
+        if (!previewable(extension)) {
+            return actions
+        }
+
+        actions.push('preview');
+
+        return actions;
+    }
+
+    function getFileType(extension) {
+        var type = ''
+        try {
+            type = extension.match(/\w+$/)[0]
+        } catch (err) {
+            type = '未知'
+        }
+        return type
+    }
+
+    function getFileSize(bytes) {
+
+        if (!bytes) return 0;
+
+        bytes = parseInt(bytes);
+
+        if (isNaN(bytes)) return bytes;
+
+        if (bytes > 1024 * 1024) {
+            return (bytes / 1024 / 1024).toFixed(2) + 'mb'
+        }
+
+        return Math.floor(bytes / 1024) + 'kb'
+
+    }
+
+    function getFileLogo(extension) {
+
+        if (!isAvailableFile(extension)) {
+            return '/filetype/default.png'
+        }
+
+        var fileType = getFileType(extension);
+
+        switch (fileType) {
+            case 'jpeg' :
+            case 'jpg'  :
+            case 'png'  :
+                return '/filetype/pic.png'
+            case 'mp4'  :
+                return '/filetype/video.png'
+            case 'pdf'  :
+                return '/filetype/pdf.png'
+            case 'zip'  :
+                return '/filetype/zip.png'
+            case 'ppt'  :
+                return '/filetype/ppt.png'
+            case 'audio':
+                return '/filetype/audio.png'
+            case 'excel':
+                return '/filetype/excel.png'
+        }
+
+        return '/filetype/default.png'
+
+    }
+
+    function previewable(extension) {
+        return /(jpeg|jpg|png|mp4|pdf)/.test(extension)
+    }
+
+    function getHash() {
+        try {
+            return window.location.hash.match(/[^#]+/)[0]
+        } catch (err) {
+            return null
+        }
+    }
+
+
+    $(function () {
+//        var modelId = $('#model-id-container').val();
+//
+//        var localData = window.localStorage.getItem(modelId)
+//
+//        if (localData) {
+//
+//            var obj = JSON.parse(localData)
+//
+//            createMenu(getMenuData(obj.data))
+//        }
+    })
+
+
+</script>

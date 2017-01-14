@@ -1,0 +1,82 @@
+<div id="attachment-upload-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" style="width:55%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">上传</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <form id="attachment-form" method="post" action="/panel/upload/attachment" class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">附件名称</label>
+                                <div class="col-md-10">
+                                    <input type="text" class="form-control" name="name">
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">附件介绍</label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control" rows="5" name="intro"></textarea>
+                                </div>
+                            </div>
+
+
+                            <input style="display: none;" id="attachmentFile" name="file">
+                            <input style="display: none;" id="originName" name="originName">
+                            <input style="display: none;" id="input-modelId" name="modelId" value="<%= model._id %>">
+                            <input style="display: none;" id="input-objectId" name="objectId" value="">
+                            <input style="display: none;" id="input-size" name="size" value="">
+
+
+                            <button  id="realSubmit" class="realSubmit btn btn-success"
+                                    style="display: none;">确认添加
+                            </button>
+                        </form>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">上传附件
+                                <br/>
+                                <span
+                                        class="custom_process"></span></label>
+                            <div class="col-md-10">
+                                <input id="upload-input-attachment" type="file" class="form-control"
+                                       name="uploads[]"></br>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">取消</button>
+                <button  type="button" data-dismiss="modal" class="btn btn-primary waves-effect waves-light fakeSubmit">上传</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<script>
+    $(function() {
+
+        $('.panel_upload_attach').click(function() {
+
+            var objectid = $(this).data('objectid')
+
+            $('#input-objectId').val('')
+
+        })
+
+        $('#attachment-upload-modal').customSubmit()
+
+        $('#upload-input-attachment').customUpload('/upload/attachment', 'attachmentFile', function(file) {
+
+            $('#originName').val(file.name);
+
+            $('#input-size').val(file.size);
+        })
+    })
+</script>

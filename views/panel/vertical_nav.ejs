@@ -1,0 +1,35 @@
+
+<div class="left side-menu">
+    <div class="sidebar-inner" style="overflow-y: scroll;">
+        <!--- Divider -->
+        <div id="sidebar-menu">
+            <ul id="topLevelUl">
+
+                <li class="text-muted menu-title">构件列表</li>
+
+                <% Object.keys(list).forEach(function(key, level1) { %>
+                <li class="has_sub menu-item">
+                    <a href="#" class="waves-effect">  <span> <%= key %> </span> </a>
+
+
+                    <ul class="list-unstyled">
+                        <% Object.keys(list[key]).forEach(function(key2, level2) { %>
+                        <li class="has_sub menu-item">
+                            <a href="#" class="waves-effect">  <span> <%= key2 %> </span> </a>
+                            <ul class="list-unstyled">
+                                <% list[key][key2].forEach(function(item, level3) { %>
+                                <li class="menu-item"><a data-id="<%= item.objectid %>" data-index="<%= level1 + '-' + level2 + '-' + level3 %>" href="#<%= level1 + '-' + level2 + '-' + level3 %>" class="real-component"> <%= item.name %></a></li>
+                                <% }) %>
+                            </ul>
+                        </li>
+                        <% }) %>
+                    </ul>
+                </li>
+                <% }) %>
+
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+</div>

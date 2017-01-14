@@ -1,0 +1,74 @@
+<%- include('global/xheader') %>
+<div class="content-page">
+    <!-- Start content -->
+    <div class="content">
+        <div class="container">
+
+            <div class="row">
+                <div class="col-sm-8">
+                    <form role="form">
+                        <div class="form-group contact-search m-b-30">
+                            <input type="text" id="search" class="form-control" placeholder="搜索">
+                            <button type="" class="btn btn-white"><i class="fa fa-search"></i></button>
+                        </div> <!-- form-group -->
+                    </form>
+                </div>
+                <div class="col-sm-4">
+                    <a href="/upload" class="btn btn-default btn-md waves-effect waves-light m-b-30">
+                        <i class="md md-add"></i> 上传模型
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+
+                <% if(models.length == 0) {%>
+                <div class="col-md-12">
+                    <h3>没有模型</h3>
+                </div>
+                <% } %>
+
+                <% models.forEach(function(model){ %>
+
+                <div class="col-sm-6 col-md-3">
+                    <div class="card-box" style="overflow: hidden">
+                        <div class="contact-card">
+                            <a class="pull-left" href="/panel/<%= model._id%>">
+                                <img class="img-circle" src="/img/<%= model.snap %>" alt="">
+                            </a>
+                            <div class="member-info">
+                                <a class="pull-left" href="/panel/<%= model._id%>">
+                                    <h4 class="m-t-0 m-b-5 header-title"><b><%= model.name %></b></h4>
+                                </a>
+                                <p class="text-muted"><%= model.date %></p>
+                                <p class="text-dark"><i class="md md-bookmark-outline m-r-10"></i>
+                                    <small> <%= model.catName + ' ' + model.subcatName %> </small>
+                                </p>
+
+                            </div>
+
+                            <ul class="social-links list-inline m-0">
+                                <li>
+                                    <a title="" data-placement="top" data-toggle="tooltip" class="tooltips" href="/models/<%= model._id %>"
+                                       data-original-title="管理"><i class="fa fa-gear"></i></a>
+                                </li>
+                                <li>
+                                    <a title="" data-placement="top" data-toggle="tooltip" class="tooltips" href="/panel/<%= model._id %>"
+                                       data-original-title="Fuzor交互"><i class="fa fa-dashboard"></i></a>
+                                </li>
+
+                            </ul>
+                        </div>
+                    </div>
+
+                </div> <!-- end col -->
+
+                <% })%>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+<%- include('global/xfooter') %>

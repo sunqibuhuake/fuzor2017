@@ -1,0 +1,28 @@
+<div class="blog_post">
+    <h3><a href="ui-blog-item.html">
+            <%= model.name %>
+        </a></h3>
+    <h5>上传人:<a href="#"><%= model.author %></a></h5>
+    <p class="blog_info">
+        <i class="fa fa-star-o"></i> <a href="#comments">1 人收藏</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <i class="fa fa-tags"></i><a href="#"> 楼房 | 楼房1</a>
+    </p>
+    <div style="margin: 15px 0 30px 0;width: 100%;height: 280px;text-align: center">
+        <img style="height: 100%;max-width: 100%;" src="/img/<%= model.snap %>" alt="">
+    </div>
+    <p class="blog-content">
+        <%= model.intro %>
+    </p>
+    <ul class="social-icons list-inline list-unstyled">
+        <li><a href="/models/<%= model._id %>/<%= model.share == 'yes' ? 'noshare' : 'share' %>"><i
+                        class="fa fa-share-alt icon-bordered icon-primary icon-xs <%= model.share == 'yes' ? 'icon-sharing' : '' %>"></i></a>
+        </li>
+        <li><a href="/models/<%= model._id %>/delete"><i class="fa fa-trash-o icon-bordered icon-danger icon-xs"></i></a>
+        </li>
+        <%- include('./modelBlock/activeBtn')%>
+
+    </ul>
+
+
+</div>

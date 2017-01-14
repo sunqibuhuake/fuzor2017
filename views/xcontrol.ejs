@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="DoraCMS">
+    <title>控制端</title>
+
+    <script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js" type="text/javascript"></script>
+    <link href="/assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/assets/fonts/font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css"/>
+    <script src="/assets/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+
+    <script src="/assets/3d/tween.min.js"></script>
+
+    <script src="/assets/3d/three.js"></script>
+    <script src="/assets/3d/controlTrackBall.js"></script>
+    <script src="/assets/3d/Projector.js"></script>
+    <script src="/assets/3d/stat.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        .viewer-container {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            background: black;
+            overflow: hidden;
+        }
+
+        .viewer-frame {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+        }
+
+        .viewer-body {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+        }
+
+        #frame1 {
+            stroke: #07fff7;
+            stroke-width: 1px;
+        }
+
+        #infoPanel {
+            position: absolute;
+            display: none;
+            width: 25%;
+            height: 60%;
+            top: 20%;
+            left: 5%;
+            border: 1px solid #07fff7;
+            padding: 6px 8px;
+        }
+
+        .divider {
+            width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 6px;
+        }
+
+        .infoContent {
+            width: 100%;
+            height: calc(100% - 50px);
+            overflow-y: scroll;
+            color: #ababab;
+        }
+
+        #adjustPanel {
+            position: absolute;
+            display: none;
+            top: 18px;
+            right: 10px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #07fff7;
+        }
+        #adjustPanel .col-md-4 {
+            margin: 10px 0;
+
+        }
+
+
+        .cusInput {
+            background: transparent;
+            border: 1px solid #07fff7;
+            color: #07fff7;
+        }
+
+        .cusInput:focus {
+            border-color: #07fff7;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(7, 255, 247, .6);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(7, 255, 247, .6);
+        }
+
+        .cusBtn {
+            background: transparent;
+            border: 1px solid #07fff7;
+            color: #07fff7;
+            width: 100%;
+        }
+
+        .cusBtn:hover {
+            background: transparent;
+            border: 1px solid #07fff7;
+            color: #07fff7;
+        }
+
+        .cusBtn:focus {
+            background: transparent;
+            color: #07fff7;
+            border-color: #07fff7;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(7, 255, 247, .6);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(7, 255, 247, .6);
+        }
+        .controlPanel {
+            width: 100px;
+            position: absolute;
+            right: 10px;
+            bottom: 20px;
+        }
+
+        .controlPanel > div {
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        #backBtn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: rgba(255,255,255,.7);
+            border: 1px solid rgba(255,255,255,.7);
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            font-size: 16px;
+            line-height: 1.7;
+            text-align: center;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+
+<div class="viewer-container">
+
+    <div class="viewer-body" id="container">
+
+    </div>
+
+</div>
+
+<div id="infoPanel">
+    <h4 style="width: 100%;color: white;">
+        构件详情
+    </h4>
+    <div class="divider">
+    </div>
+    <div class="infoContent">
+
+    </div>
+</div>
+
+<div id="adjustPanel">
+    <div>
+        <div class="row">
+            <div class="col-md-4">
+                <input id="fovCam" class="form-control cusInput" placeholder="前后摄像机">
+
+            </div>
+            <div class="col-md-4">
+                <input id="leftCam" class="form-control cusInput" placeholder="左右摄像机">
+            </div>
+            <div class="col-md-4">
+                <button id="ajustBtn" class="btn btn-default cusBtn">确认</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="controlPanel">
+    <div>
+        <button  data-mode="mode9" class="btn btn-default cusBtn modeSwitch">九宫格模式</button>
+    </div>
+    <div>
+        <button   data-mode="mode4" class="btn btn-default cusBtn modeSwitch">田字格模式</button>
+    </div>
+    <div>
+        <button id="modelBoom" class="btn btn-default cusBtn" data-status="no" >模型拆解</button>
+    </div>
+    <div>
+        <button id="modelReset" class="btn btn-default cusBtn">模型复位</button>
+    </div>
+    <div>
+        <button class="btn btn-default cusBtn" id="toggleCamAdjustPanel">摄像机调整</button>
+    </div>
+</div>
+
+<div id="backBtn" href="/models">
+    <i class="fa fa-arrow-left"></i>
+</div>
+
+<input style="display: none;" id="roomId" value="<%= user._id %>">
+<input style="display: none;" id="modelName" value="<%= model.name %>">
+<input style="display: none;" id="modelPath" value="<%= model.model %>">
+<input style="display: none;" id="modelId" value="<%= model._id %>">
+
+
+<script>
+
+    function initBack() {
+
+        $('#backBtn').click(function() {
+            window.location = '/models';
+        })
+    }
+
+    initBack();
+
+    function showInfoPanel(object) {
+
+        var info = object.userData;
+
+        var str = '名称 : ' + object.name + '</br>';
+
+        for (var prop in info) {
+
+            str += prop + ' : ' + info[prop] + '</br>';
+
+        }
+
+        $('#infoPanel .infoContent').html(str);
+
+        $('#infoPanel').animate({left: '5%'});
+
+    }
+
+    function hideInfoPanel() {
+        $('#infoPanel').animate({left: '-30%'})
+    }
+
+    function Xcontrol(object, dom, socket) {
+
+        var self = this;
+
+        this.dom = dom;
+        this.object = object;
+        this.socket = socket;
+        this.state = '';
+        this.active = false;
+        this.rotateSpeed = 150;
+        this.wheelZoomSpeed = 100;
+        this.touchZoomSpeed = 300;
+        this.zoom = 0;
+        this.touchScale = {
+            start: 0,
+            end: 0
+        }
+        this.delta = {
+            x: 0,
+            y: 0
+        }
+        this.point = {
+            x: 0,
+            y: 0
+        }
+        this.update = function () {
+
+            self.delta.x /= self.rotateSpeed;
+            self.delta.y /= self.rotateSpeed;
+
+            self.object.rotation.y += self.delta.x;
+            self.object.rotation.x += self.delta.y;
+
+            var scale = self.object.scale.x + self.zoom;
+
+
+            if(scale <= 0.1) {
+
+                scale = 0.1;
+            }
+
+
+            self.object.scale.x = scale;
+            self.object.scale.y = scale;
+            self.object.scale.z = scale;
+
+
+            self.object.scale.x += self.zoom;
+            self.object.scale.y += self.zoom;
+            self.object.scale.z += self.zoom;
+
+            self.zoom = 0;
+
+            self.socket.emit('control', {
+                r: {
+                    x: self.object.rotation.x,
+                    y: self.object.rotation.y,
+                    z: self.object.rotation.z
+                },
+                s: {
+                    x: self.object.scale.x,
+                    y: self.object.scale.y,
+                    z: self.object.scale.z
+                }
+            })
+
+        }
+
+        function reset() {
+            self.zoom = 0;
+            self.touchScale = {
+                start: 0,
+                end: 0
+            }
+            self.delta = {
+                x: 0,
+                y: 0
+            }
+            self.point = {
+                x: 0,
+                y: 0
+            }
+        }
+
+        function mousedown(event) {
+
+            self.active = true;
+
+        }
+
+        function mouseup(event) {
+
+
+            self.active = false
+
+            reset()
+
+        }
+
+
+        function mousemove(event) {
+
+            if (!self.active) {
+                return false;
+            }
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+            self.delta = {
+                x: event.movementX,
+                y: event.movementY
+            }
+
+            console.log(self.delta)
+
+            self.update()
+
+        }
+
+        function mousewheel(event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+            self.zoom = 0 - event.deltaY / self.wheelZoomSpeed;
+            self.update();
+
+        }
+
+        function touchstart(event) {
+
+            console.log(event)
+
+            self.point.x = event.touches[0].pageX;
+
+            self.point.y = event.touches[0].pageY;
+
+            self.active = true;
+
+            switch (event.touches.length) {
+
+                case 1:
+                    self.point = {
+                        x: event.touches[0].pageX,
+                        y: event.touches[0].pageY
+                    }
+                    break;
+
+                default: // 2 or more
+                    var dx = event.touches[0].pageX - event.touches[1].pageX;
+                    var dy = event.touches[0].pageY - event.touches[1].pageY;
+                    var scale = Math.sqrt(dx * dx + dy * dy);
+                    self.touchScale.start = scale;
+                    break;
+
+            }
+
+        }
+
+        function touchmove(event) {
+
+            if (!self.active) {
+                return false;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            switch (event.touches.length) {
+
+                case 1:
+                    self.delta = {
+                        x: event.touches[0].pageX - self.point.x,
+                        y: event.touches[0].pageY - self.point.y
+                    }
+
+                    self.point = {
+                        x: event.touches[0].pageX,
+                        y: event.touches[0].pageY
+                    }
+
+                    self.update()
+
+                    break;
+
+                default: // 2 or more
+                    var dx = event.touches[0].pageX - event.touches[1].pageX;
+                    var dy = event.touches[0].pageY - event.touches[1].pageY;
+                    var dis = Math.sqrt(dx * dx + dy * dy);
+                    self.touchScale.end = dis;
+                    self.zoom = (self.touchScale.end - self.touchScale.start) / self.touchZoomSpeed;
+                    self.update();
+                    self.touchScale.start = dis;
+                    break;
+
+            }
+
+        }
+
+        function touchend(event) {
+
+            self.active = false;
+
+            reset()
+        }
+
+        this.dom.addEventListener('mousedown', mousedown, false);
+        this.dom.addEventListener('mousemove', mousemove, false);
+        this.dom.addEventListener('mouseup', mouseup, false);
+        this.dom.addEventListener('wheel', mousewheel, false);
+
+
+        this.dom.addEventListener('touchstart', touchstart, false);
+        this.dom.addEventListener('touchend', touchend, false);
+        this.dom.addEventListener('touchmove', touchmove, false);
+
+    }
+
+    var Viewer = function (containerID) {
+        this.container = document.getElementById(containerID);
+        this.meta = {}
+        this.socket = null;
+        this.camera = null;
+        this.controls = null;
+        this.scene = null;
+        this.renderer = null;
+        this.projector = null;
+        this.boomData = {};
+        this.play = false;
+        this.select = {
+            lastMeshMaterial: -1,
+            lastMeshID: -1,
+            lastObjectMaterial: -1,
+            lastObjectID: -1
+        }
+        this.targetList = []
+
+        this.init()
+    }
+
+    Viewer.prototype = {
+        init: function () {
+
+            this.getMetaData()
+
+            this.initEventBind()
+
+            this.initSocket()
+
+            this.initScene()
+
+        },
+        getMetaData: function () {
+
+            var roomID = document.querySelector('#roomId').value
+
+            var modelPath = document.querySelector('#modelPath').value
+
+            var modelName = document.querySelector('#modelName').value
+
+            var modelId = document.querySelector('#modelId').value
+
+
+            this.meta = {
+                roomID: roomID,
+                modelPath: '/models/' + modelPath,
+                modelName: modelName,
+                modelId: modelId
+            }
+
+        },
+
+        initEventBind: function() {
+
+            this.initToggle()
+
+            window.addEventListener('resize', this.onWindowResize.bind(this), false);
+            document.addEventListener('click', this.clickHandler.bind(this), false);
+
+        },
+
+        initSocket: function () {
+
+            this.socket = io('/' + this.meta.roomID)
+
+            this.socket.emit('active', {
+                modelId: this.meta.modelId,
+            })
+
+
+            this.initAdjust();
+            this.initMode();
+            this.initReset();
+            this.initBoom();
+
+        },
+
+        initToggle: function(){
+            $('#toggleCamAdjustPanel').click(function() {
+
+                $('#adjustPanel').toggle(500);
+
+            })
+        },
+
+        initReset: function() {
+
+            var self = this;
+
+            $('#modelReset').click(function() {
+
+                self.socket.emit('reset', {
+                })
+
+                self.resetModel();
+
+            })
+
+        },
+        initMode: function() {
+
+            var self = this;
+
+            $('.modeSwitch').click(function() {
+
+                var mode = $(this).data('mode');
+
+                self.socket.emit('mode', {
+                    mode: mode
+                })
+
+            })
+
+        },
+
+        initAdjust: function () {
+
+            var self = this;
+
+            $('#ajustBtn').click(function () {
+
+                var fov = $('#fovCam').val().trim();
+
+                var left = $('#leftCam').val().trim();
+
+                fov = fov ? fov : 100000;
+
+                left = left ? left : 100000;
+
+                self.socket.emit('adjust', {
+                    fov: fov,
+                    left: left
+                })
+            })
+        },
+
+        initBoom: function() {
+
+            var self = this;
+
+            $('#modelBoom').click(function () {
+
+                var status = $(this).data('status');
+
+                if(status == 'no') {
+
+                    self.boomModel();
+
+                    self.socket.emit('boom',{
+                        action: 'open'
+                    })
+
+                    $(this).data('status', 'yes');
+
+                    $(this).html('模型闭合');
+
+
+                } else {
+
+                    self.resetBoomModel();
+
+                    self.socket.emit('boom',{
+                        action: 'close'
+                    })
+
+                    $(this).data('status', 'no');
+
+                    $(this).html('模型拆解');
+
+                }
+
+            })
+
+        },
+        initScene: function () {
+
+            var self = this;
+
+            this.scene = new THREE.Scene();
+
+            this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000000);
+
+            this.projector = new THREE.Projector();
+
+            this.initRenderer();
+
+            //this.initControls();
+
+            this.initContainer();
+
+            this.loadModel()
+
+            this.animate()
+
+        },
+
+        render: function () {
+
+            this.renderer.render(this.scene, this.camera);
+
+        },
+        animate: function () {
+
+            requestAnimationFrame(this.animate.bind(this));
+
+            if (this.play) {
+
+                //this.controls.update();
+                this.render()
+
+            }
+
+        },
+
+
+        initContainer: function () {
+
+            this.container.appendChild(this.renderer.domElement);
+
+        },
+        initRenderer: function () {
+
+            this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+
+            this.renderer.setClearColor(0x000000, 0);
+
+            this.renderer.setPixelRatio(window.devicePixelRatio);
+
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+        },
+
+
+        initControls: function () {
+            this.controls = new THREE.TrackballControls(this.camera, document, this.socket);
+            this.controls.rotateSpeed = 1.0;
+            this.controls.zoomSpeed = 1.2;
+            this.controls.panSpeed = 0.8;
+            this.controls.noZoom = false;
+            this.controls.noPan = false;
+            this.controls.staticMoving = true;
+            this.controls.dynamicDampingFactor = 0.3;
+            this.controls.keys = [65, 83, 68];
+            //TODO ADD THIS FEATURE
+            //this.controls.addEventListener('change', render);
+
+        },
+
+        loadModel: function () {
+
+            this.loadJSONModel()
+
+        },
+
+        addLight: function () {
+
+            var light = new THREE.AmbientLight(0xffffff);
+
+            this.scene.add(light);
+
+        },
+
+        setCameraPos: function (x, y, z) {
+
+            this.camera.position.set(x, y, z);
+
+        },
+
+        loadJSONModel: function () {
+
+            var self = this;
+
+            var loader = new THREE.ObjectLoader()
+
+            loader.load(this.meta.modelPath, function (obj) {
+
+                self.scene = obj;
+
+                self.xcontrol = new Xcontrol(self.scene, document.querySelector('#container'), self.socket);
+
+                self.addLight();
+
+                self.setCameraPos(0, 0, 100000);
+
+                self.computeNormalsAndFaces();
+
+                self.play = true;
+
+            })
+
+        },
+
+        resetModel: function() {
+
+            if(!this.play) {
+                return false;
+            }
+
+            this.scene.rotation.x = 0
+            this.scene.rotation.y = 0
+            this.scene.rotation.z = 0
+
+            this.scene.scale.x = 1;
+            this.scene.scale.y = 1;
+            this.scene.scale.z = 1;
+
+        },
+
+        loadFBXMode: function () {
+
+            var self = this;
+
+
+            // model
+            var manager = new THREE.LoadingManager();
+            manager.onProgress = function (item, loaded, total) {
+                console.log(item, loaded, total);
+            };
+            var onProgress = function (xhr) {
+                if (xhr.lengthComputable) {
+                    var percentComplete = xhr.loaded / xhr.total * 100;
+                    console.log(Math.round(percentComplete, 2) + '% downloaded');
+                }
+            };
+            var onError = function (xhr) {
+            };
+            var loader = new THREE.FBXLoader(manager);
+            loader.load(this.meta.modelPath, function (object) {
+                object.traverse(function (child) {
+                    if (child instanceof THREE.Mesh) {
+                        // pass
+                    }
+                    if (child instanceof THREE.SkinnedMesh) {
+                        if (child.geometry.animations !== undefined || child.geometry.morphAnimations !== undefined) {
+                            child.mixer = new THREE.AnimationMixer(child);
+                            mixers.push(child.mixer);
+                            var action = child.mixer.clipAction(child.geometry.animations[0]);
+                            action.play();
+                        }
+                    }
+                });
+                self.scene.add(object);
+
+                self.addLight()
+
+                self.play = true;
+
+            }, onProgress, onError);
+        },
+
+        loadDaeModel: function () {
+
+            function getMaxScale(obj) {
+                return (obj.x >= obj.y) ? ((obj.x >= obj.z) ? obj.x : obj.z ) : ((obj.y >= obj.z) ? obj.y : obj.z )
+            }
+
+            var self = this
+            var loader = new THREE.ColladaLoader();
+            loader.options.convertUpAxis = true;
+            loader.load(this.meta.modelPath, function (collada) {
+                console.log(collada)
+                var dae = collada.scene;
+                dae.traverse(function (child) {
+                    //do nothing
+                });
+                dae.scale.x = dae.scale.y = dae.scale.z = 1;
+                dae.updateMatrix();
+
+                var bBox = new THREE.Box3().setFromObject(dae);
+                bBox.getCenter(dae.position);
+                dae.position.multiplyScalar(-1);
+                var maxScale = getMaxScale(bBox.getSize());
+                var dist = maxScale * 2
+                self.setCameraPos(dist, dist, dist)
+                self.scene.add(dae);
+
+                self.addLight();
+                self.play = true;
+            });
+        },
+
+        boomModel: function () {
+
+            var self = this;
+
+            var res = {}
+
+            function ca(vertices) {
+
+                var pos = {
+                    x: 0,
+                    y:0,
+                    z :0
+                }
+
+                vertices.forEach(function(v) {
+                    pos.x += v.x;
+                    pos.y += v.y;
+                    pos.z += v.z;
+                })
+
+                var l = vertices.length
+
+                pos.x = pos.x / l
+                pos.y = pos.y / l
+                pos.z = pos.z / l
+
+                return pos
+
+            }
+
+            var objs = this.scene.children
+
+            var lightIndex = objs.length - 1;
+
+            objs.forEach(function(obj,i) {
+
+                if(i !== lightIndex) {
+
+                    if(obj.children.length > 0) {
+
+                        var arr = []
+
+                        var meshs = obj.children
+
+                        meshs.forEach(function(mesh) {
+
+                            if(mesh.geometry && mesh.geometry.vertices && mesh.geometry.vertices.length) {
+                                arr.push( ca(mesh.geometry.vertices) )
+                            }
+
+                        })
+
+                        res[i] = ca(arr)
+
+                    }
+                }
+            })
+
+            this.boomData = res;
+
+            for(var index in res) {
+
+                (function(){
+                    var pos = res[index];
+                    createjs.Tween.get(self.scene.children[index].position).to(pos, 1500, createjs.Ease.cubicInOut)
+                })(index)
+
+            }
+        },
+
+        resetBoomModel: function() {
+
+            var self = this;
+
+            for(var index in this.boomData) {
+
+                (function(){
+                    var pos = {x: 0, y:0, z:0};
+                    createjs.Tween.get(self.scene.children[index].position).to(pos, 1500, createjs.Ease.cubicInOut)
+                })(index)
+
+            }
+
+        },
+        joinModel: function () {
+
+        },
+
+
+        onWindowResize: function () {
+
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+            //this.controls.handleResize();
+
+            this.render();
+
+        },
+
+        handleNoSelect: function() {
+
+            $('#infoPanel').hide(500)
+
+            this.socket.emit('select', {
+                parent: '',
+                current: ''
+            })
+
+        },
+
+        handleSelect: function (object, currentObject) {
+
+            console.log(object)
+
+            var info = object.userData;
+
+            var str = '名称 : ' + object.name + '</br>';
+
+            for (var prop in info) {
+
+                str += prop + ' : ' + info[prop] + '</br>';
+
+            }
+
+
+            $('#infoPanel').show(500);
+
+            $('#infoPanel .infoContent').html(str);
+
+            $('#infoPanel').animate({left: '5%'});
+
+            this.socket.emit('select', {
+                parent: object.uuid,
+                current: currentObject.uuid
+            })
+
+        },
+        clickHandler: function (event) {
+
+            event.preventDefault();
+
+            var selMaterial = new THREE.MeshBasicMaterial({
+                color: 'red',
+                transparent: true,
+                opacity: 0.5,
+                side: '2'
+            });
+
+            var lastMeshMaterial = this.select.lastMeshMaterial;
+
+            var lastMeshID = this.select.lastMeshID
+
+            var lastObjectMaterial = this.select.lastObjectMaterial
+
+            var lastObjectID = this.select.lastObjectID
+
+            var scene = this.scene
+
+            var camera = this.camera
+
+            //之前有选中物体
+
+            console.log(lastMeshMaterial)
+
+            if (this.select.lastMeshMaterial != -1) {
+                //重置
+                for (var i = 0; i < scene.children.length; i++) {
+                    if (scene.children[i].id == this.select.lastMeshID) {
+                        scene.children[i].material = this.select.lastMeshMaterial;
+                    }
+                }
+            }
+
+            if (this.select.lastObjectMaterial != -1) {
+                //reset last material for last lastObjectID
+                for (var i = 0; i < scene.children.length; i++) {
+                    if (scene.children[i].id == this.select.lastObjectID) {
+                        for (var ii = 0; ii < scene.children[i].children.length; ii++) {
+                            scene.children[i].children[ii].material = this.select.lastObjectMaterial;
+                        }
+
+                    }
+                }
+            }
+
+
+            var vector = new THREE.Vector3(( event.clientX / window.innerWidth ) * 2 - 1, -( event.clientY / window.innerHeight ) * 2 + 1, 0.5);
+
+            vector.unproject(camera)
+
+            var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+
+            var intersects = raycaster.intersectObjects(this.targetList);
+
+
+            if (intersects.length > 0) {
+
+                var j = 0;
+
+                while (j < intersects.length) {
+                    //FOR MESHES:
+                    if (!$.isEmptyObject(intersects[j].object.userData)) {
+
+                        console.log('自身有数据');
+
+                        this.handleSelect(intersects[j].object, intersects[j].object);
+
+                        if (this.select.lastMeshMaterial != -1) {
+                            //reset last material for last lastMeshID
+                            for (var i = 0; i < scene.children.length; i++) {
+                                if (scene.children[i].id == this.select.lastMeshID) {
+
+
+                                    scene.children[i].material = this.select.lastMeshMaterial;
+                                }
+                            }
+                        }
+
+
+                        //set lastMaterial
+                        this.select.lastMeshMaterial = intersects[j].object.material;
+
+                        //set lastMeshID
+                        this.select.lastMeshID = intersects[j].object.id;
+
+                        //apply SelMaterial
+                        intersects[j].object.material = selMaterial;
+
+
+                        break;
+                    }
+                    //FOR OBJECT3D
+                    if (!$.isEmptyObject(intersects[j].object.parent.userData)) {
+
+                        console.log('父亲有数据');
+
+                        this.handleSelect(intersects[j].object.parent, intersects[j].object);
+
+                        if (this.select.lastObjectMaterial != -1) {
+                            //reset last material for last lastObjectID
+                            for (var i = 0; i < scene.children.length; i++) {
+                                if (scene.children[i].id == this.select.lastObjectID) {
+                                    for (var ii = 0; ii < scene.children[i].children.length; ii++) {
+                                        scene.children[i].children[ii].material = this.select.lastObjectMaterial;
+                                    }
+
+                                }
+                            }
+                        }
+
+                        //set lastMaterial
+                        this.select.lastObjectMaterial = intersects[j].object.material;
+
+                        //set lastObjectID
+                        this.select.lastObjectID = intersects[j].object.parent.id;
+
+                        //apply SelMaterial
+                        intersects[j].object.material = selMaterial;
+
+
+                        break;
+                    }
+                    j++;
+                }
+
+            } else {
+
+                this.handleNoSelect()
+
+                //no data
+            }
+        },
+        computeNormalsAndFaces: function () {
+
+            var len = this.scene.children.length
+
+            var scene = this.scene
+
+            for (var i = 0; i < len; i++) {
+
+                if (scene.children[i].hasOwnProperty("geometry")) {
+
+                    scene.children[i].geometry.mergeVertices();
+
+                    scene.children[i].castShadow = true;
+
+                    scene.children[i].geometry.computeFaceNormals();
+
+                    this.targetList.push(scene.children[i]);
+
+                }
+
+                if (scene.children[i].children.length > 0) {
+
+                    for (var k = 0; k < scene.children[i].children.length; k++) {
+
+                        if (scene.children[i].children[k].hasOwnProperty("geometry")) {
+
+                            this.targetList.push(scene.children[i].children[k]);
+
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    var viewer = new Viewer('container')
+
+</script>
+
+
+</body>
+</html>

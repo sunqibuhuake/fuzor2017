@@ -1,0 +1,34 @@
+<div class="table-responsive">
+    <table class="table table-actions-bar">
+        <thead>
+        <tr>
+            <th>子类名称</th>
+            <th>创建日期</th>
+            <th>模型数量</th>
+            <th style="min-width: 80px;">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <% if(subcats.length > 0) {%>
+
+        <% subcats.forEach(function(subcat) { %>
+        <tr>
+            <td> <%= subcat.name %></td>
+            <td> <%= subcat.date %> </td>
+            <td> <%= subcat.amount %> </td>
+            <td>
+                <a href="#"
+                   data-toggle="modal" data-target="#modify"
+                   data-cid="<%= subcat._id %>"
+                   data-type="sub"
+                   class="table-action-btn catmodify" ><i class="md md-edit"></i></a>
+                <a href="#" class="table-action-btn"><i class="md md-close"></i></a>
+            </td>
+        </tr>
+        <% }) %>
+        <% } %>
+
+        </tbody>
+    </table>
+</div>

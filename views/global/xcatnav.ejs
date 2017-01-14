@@ -1,0 +1,28 @@
+<div class="left side-menu">
+    <div class="sidebar-inner" style="overflow-y: scroll;">
+        <!--- Divider -->
+        <div id="sidebar-menu">
+            <ul>
+
+                <li class="text-muted menu-title">分类</li>
+
+                <li class="has_sub">
+
+                    <% cats.forEach(function(cat){ %>
+                    <a href="#" class="waves-effect"> <span> <%= cat.name %> </span> </a>
+                    <ul class="list-unstyled">
+                        <% cat.subcats.forEach(function(sb){ %>
+                        <li><a href="/models/cat/<%= sb._id %>" class="waves-effect"> <span> <%= sb.name %> </span>
+                            </a></li>
+                        <% }) %>
+                    </ul>
+
+                    <% }) %>
+                </li>
+
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+</div>

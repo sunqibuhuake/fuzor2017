@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="DoraCMS">
+    <title>tv</title>
+
+    <script src= "http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js" type="text/javascript"></script>
+    <link href= "/assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href= "/assets/fonts/font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css"/>
+    <script src= "/assets/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+
+    <script src="/assets/3d/three.js"></script>
+    <script src="/assets/3d/tvTrackBall.js"></script>
+    <script src="/assets/3d/Projector.js"></script>
+    <script src="/assets/3d/stat.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+        body{
+            overflow: hidden;
+            background: black;
+        }
+    </style>
+
+</head>
+<body>
+<div id="container">
+</div>
+
+<input style="display: none;" id="roomId" value="<%= user._id %>">
+<input style="display: none;" id="modelName" value="<%= model.name %>">
+<input style="display: none;" id="modelPath" value="<%= model.model %>">
+
+<script>
+
+    var Viewer = function (containerID) {
+        this.container = document.getElementById(containerID);
+        this.meta = {}
+        this.socket = null;
+        this.camera = null;
+        this.controls = null;
+        this.scene = null;
+        this.renderer = null;
+
+        this.select = {
+            lastMaterial: -1,
+            lastId: '',
+            currentMaterial: new THREE.MeshBasicMaterial({
+                color: 'red',
+                transparent: true,
+                opacity: 0.5,
+                side: '2'
+            }),
+            currentId: -1
+        }
+        this.views = [
+            {
+                left: 0,
+                bottom: 0.5,
+                width: 0.5,
+                height: 0.5,
+                background: new THREE.Color().setRGB( 0, 0, 0 ),
+                eye: [ 0, 0, 1 ],
+                //up: [ 1, 1, 0 ],
+                up: [ -1, -1, 0 ],
+                fov: 60
+
+            },
+            {
+                left: 0,
+                bottom: 0,
+                width: 0.5,
+                height: 0.5,
+                background: new THREE.Color().setRGB( 0, 0, 0 ),
+                eye: [ 1, 0, 0 ],
+                //up: [ 0, -1, -1 ],
+                up: [ 0, 1, 1],
+                fov: 60
+            },
+            {
+                left: 0.5,
+                bottom: 0.5,
+                width: 0.5,
+                height: 0.5,
+                background: new THREE.Color().setRGB( 0, 0, 0 ),
+                eye: [ -1, 0, 0 ],
+                //up: [ 0, 1, -1],
+                up: [ 0, -1, 1],
+                fov: 60
+            },
+            {
+                left: 0.5,
+                bottom: 0,
+                width: 0.5,
+                height: 0.5,
+                background: new THREE.Color().setRGB( 0, 0, 0 ),
+                eye: [ 0, 0, -1 ],
+                //up: [ 1, -1, 0 ],
+                up: [ -1, 1, 0 ],
+                fov: 60
+            }
+        ];
+
+
+        this.cameraControlData = []
+
+        this.projector = null;
+        this.targetList = []
+        this.init()
+    }
+
+    Viewer.prototype = {
+        init: function () {
+
+            this.initViewData()
+
+            this.getMetaData()
+
+            this.initSocket()
+
+            this.initScene()
+
+        },
+
+        initViewData: function() {
+
+            var width = window.innerWidth;
+            var height = window.innerHeight;
+
+            if(width >= height) {
+
+                var cubeWidth = height;
+                var _cubeWidth = cubeWidth / 2;
+
+                this.views[0].left = ((width - height) / 2) / width;
+                this.views[0].bottom = 0.5;
+                this.views[0].width = _cubeWidth / width;
+                this.views[0].height = 0.5;
+
+                this.views[1].left = ((width - height) / 2) / width;
+                this.views[1].bottom = 0;
+                this.views[1].width = _cubeWidth / width;
+                this.views[1].height = 0.5;
+
+                this.views[2].left = ((width - height) / 2 + _cubeWidth ) / width;
+                this.views[2].bottom = 0.5;
+                this.views[2].width = _cubeWidth / width;
+                this.views[2].height = 0.5
+
+                this.views[3].left = ((width - height) / 2 + _cubeWidth ) / width;
+                this.views[3].bottom = 0;
+                this.views[3].width = _cubeWidth / width;
+                this.views[3].height = 0.5;
+
+            }
+
+            if(width < height) {
+
+                var cubeWidth = width;
+                var _cubeWidth = cubeWidth / 2;
+
+                this.views[0].left = 0;
+                this.views[0].bottom = ((height - width) / 2 + _cubeWidth) / height;
+                this.views[0].width = 0.5;
+                this.views[0].height = _cubeWidth / height;
+
+                this.views[1].left = 0;
+                this.views[1].bottom = ((height - width) / 2) / height;
+                this.views[1].width = 0.5;
+                this.views[1].height = _cubeWidth / height;
+
+
+                this.views[2].left = 0.5;
+                this.views[2].bottom = ((height - width) / 2 + _cubeWidth) / height;
+                this.views[2].width = 0.5;
+                this.views[2].height = _cubeWidth / height;
+
+                this.views[3].left = 0.5;
+                this.views[3].bottom = ((height - width) / 2) / height;
+                this.views[3].width = 0.5;
+                this.views[3].height = _cubeWidth / height;
+
+
+            }
+
+        },
+        getMetaData: function () {
+
+            var roomID = document.querySelector('#roomId').value
+
+            var modelPath = document.querySelector('#modelPath').value
+
+            var modelName = document.querySelector('#modelName').value
+
+
+            this.meta = {
+                roomID: roomID,
+                modelPath: '/models/' + modelPath,
+                modelName: modelName
+            }
+
+        },
+        initSocket: function () {
+
+            var self = this
+
+            this.socket = io('/' + this.meta.roomID)
+
+            this.socket.on('control', function(data) {
+
+                self.updateControlData(data)
+
+            })
+
+            this.socket.on('select', function(data) {
+
+                self.updateSelectData.call(self, data)
+
+            })
+
+            this.socket.on('adjust', function(data) {
+
+                self.updateCamData(data)
+
+            })
+
+
+
+
+            /*
+            * TODO 动态切换模型
+            * */
+
+//            this.socket.on('activeModel', function(modelInfo){
+//
+//                self.activeModel(modelInfo)
+//            })
+
+        },
+
+        updateSelectData: function(data) {
+
+            var selMaterial = new THREE.MeshBasicMaterial({
+                color: 'red',
+                transparent: true,
+                opacity: 0.5,
+                side: '2'
+            });
+
+            var uuid = data.current;
+
+            var object = this.scene.getObjectByProperty('uuid', uuid);
+
+            if(this.select.lastId) {
+
+                this.scene.getObjectByProperty('uuid', this.select.lastId).material = this.select.lastMaterial;
+
+            }
+
+            this.select.lastId = uuid;
+
+            this.select.lastMaterial = object.material;
+
+            object.material = selMaterial;
+
+        },
+
+        updateControlData: function(data) {
+
+            this.scene.rotation.x = data.r.x
+            this.scene.rotation.y = data.r.y
+            this.scene.rotation.z = data.r.z
+            this.scene.scale.x = data.s.x
+            this.scene.scale.y = data.s.y
+            this.scene.scale.z = data.s.z
+        },
+
+        updateCamData: function(data) {
+
+            var fov = data.fov - 0;
+            var left = data.left - 0;
+
+            this.views.forEach(function(view, index) {
+                view.camera.position.x = (Math.abs(view.eye[ 0 ]) == 1)? left * view.eye[0] : 0;
+                view.camera.position.y = (Math.abs(view.eye[ 1 ]) == 1)? 0 * view.eye[1] : 0;
+                view.camera.position.z = (Math.abs(view.eye[ 2 ]) == 1)? fov * view.eye[2] : 0;
+            })
+        },
+
+        activeModel: function(modelInfo) {
+
+
+            this.meta.modelPath = modelInfo.modelPath;
+
+            this.meta.modelName = modelInfo.modelName;
+
+            this.loadModel(function(obj) {
+
+                self.scene = obj;
+
+                var light = new THREE.AmbientLight(0xffffff);
+
+                self.scene.add(light);
+
+                //self.scene.background = new THREE.Color(0x000000);
+
+                self.camera.position.set(15000, 15000, 15000);
+
+                self.computeNormalsAndFaces()
+
+            })
+
+        },
+
+        initScene: function () {
+
+            var self = this;
+
+            this.scene = new THREE.Scene();
+
+            this.initViews();
+
+            this.initRenderer();
+
+            this.initContainer();
+
+            this.loadModel()
+
+            this.animate();
+
+            this.initEvent();
+
+        },
+        
+        initViews: function() {
+
+            var dist = 100000;
+
+            this.views.forEach(function(view, index) {
+                var camera = new THREE.PerspectiveCamera( view.fov, window.innerWidth / window.innerWidth, 0.1, 1000000 );
+                camera.position.x = (Math.abs(view.eye[ 0 ]) == 1)? dist * view.eye[0] : 0;
+                camera.position.y = (Math.abs(view.eye[ 1 ]) == 1)? dist * view.eye[1] : 0;
+                camera.position.z = (Math.abs(view.eye[ 2 ]) == 1)? dist * view.eye[2] : 0;
+                camera.up.x = view.up[ 0 ];
+                camera.up.y = view.up[ 1 ];
+                camera.up.z = view.up[ 2 ];
+                view.camera = camera;
+
+            })
+            
+        },
+
+        render: function () {
+
+            var self = this;
+
+            var scene = self.scene;
+
+            var renderer = self.renderer;
+
+            var windowWidth = window.innerWidth;
+
+            var windowHeight = window.innerHeight;
+
+            this.views.forEach(function(view, index) {
+                var camera = view.camera;
+                var left   = Math.floor( windowWidth  * view.left );
+                var bottom = Math.floor( windowHeight * view.bottom );
+                var width  = Math.floor( windowWidth  * view.width );
+                var height = Math.floor( windowHeight * view.height );
+
+                renderer.setViewport( left, bottom, width, height );
+                renderer.setScissor( left, bottom, width, height );
+                renderer.setScissorTest( true );
+                renderer.setClearColor( view.background );
+
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                camera.lookAt(scene.position);
+
+                renderer.render(scene, camera);
+
+            })
+
+        },
+        animate: function () {
+
+            requestAnimationFrame(this.animate.bind(this));
+
+            if(this.play) {
+
+                //this.controls.update(this.cameraControlData);
+                this.render()
+            }
+
+        },
+
+
+        initContainer: function () {
+
+            this.container.appendChild(this.renderer.domElement);
+
+        },
+        initRenderer: function () {
+
+            this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+
+            this.renderer.setClearColor(0x000000, 0);
+
+            this.renderer.setPixelRatio(window.devicePixelRatio);
+
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+        },
+
+
+        initControls: function () {
+            
+            
+            this.controls = new THREE.TrackballControls(this.camera, document, this.socket);
+            this.controls.rotateSpeed = 1.0;
+            this.controls.zoomSpeed = 1.2;
+            this.controls.panSpeed = 0.8;
+            this.controls.noZoom = false;
+            this.controls.noPan = false;
+            this.controls.staticMoving = true;
+            this.controls.dynamicDampingFactor = 0.3;
+            this.controls.keys = [65, 83, 68];
+            //TODO ADD THIS FEATURE
+            //this.controls.addEventListener('change', render);
+
+        },
+
+        loadModel: function () {
+
+            this.loadJSONModel()
+
+        },
+
+        loadJSONModel: function(){
+
+            var self = this;
+
+            var loader = new THREE.ObjectLoader()
+
+            loader.load(this.meta.modelPath, function (obj) {
+
+                self.scene = obj;
+
+                self.addLight();
+
+                //self.setCameraPos(15000, 15000, 15000);
+
+                self.computeNormalsAndFaces();
+
+                self.play = true;
+
+            })
+
+        },
+
+
+        addLight: function() {
+
+            var light = new THREE.AmbientLight(0xffffff);
+
+            this.scene.add(light);
+
+        },
+
+
+        setCameraPos: function(x, y, z){
+
+            this.camera.position.set(x, y, z);
+
+        },
+        boomModel: function() {
+
+            //this.scene
+
+
+        },
+
+
+        initEvent: function () {
+
+            window.addEventListener('resize', this.onWindowResize.bind(this), false);
+
+        },
+        onWindowResize: function () {
+
+//            this.camera.aspect = window.innerWidth / window.innerHeight;
+//            this.camera.updateProjectionMatrix();
+
+            this.initViewData();
+
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+            //this.controls.handleResize();
+
+            this.render();
+
+        },
+        computeNormalsAndFaces: function () {
+
+            var len = this.scene.children.length
+
+            var scene = this.scene
+
+            for (var i = 0; i < len; i++) {
+
+                if (scene.children[i].hasOwnProperty("geometry")) {
+
+                    scene.children[i].geometry.mergeVertices();
+
+                    scene.children[i].castShadow = true;
+
+                    scene.children[i].geometry.computeFaceNormals();
+
+                    this.targetList.push(scene.children[i]);
+
+                }
+
+                if (scene.children[i].children.length > 0) {
+
+                    for (var k = 0; k < scene.children[i].children.length; k++) {
+
+                        if (scene.children[i].children[k].hasOwnProperty("geometry")) {
+
+                            this.targetList.push(scene.children[i].children[k]);
+
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    var viewer = new Viewer('container')
+
+</script>
+
+
+</body>
+</html>

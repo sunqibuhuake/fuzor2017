@@ -1,0 +1,55 @@
+<div class="table-responsive">
+    <table class="table table-hover mails m-0 table table-actions-bar">
+        <thead>
+        <tr>
+            <th>截图</th>
+            <th>视点名</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <% views.forEach(function(view){ %>
+
+
+        <tr>
+            <td>
+                <img src="/img/<%= view.img %>" alt="contact-img" class="thumb-sm" style="height:60px;width:60px;">
+            </td>
+            <td>
+                <%= view.name %>
+            </td>
+            <td>
+                <a
+                        href="#"
+                        data-link="http://localhost:45190/execute?<%= view.focus %>"
+                        class="table-action-btn focusView"
+                ><i class="fa fa-eye"></i></a>
+                <a
+                        href="#"
+                        data-link="fuzor://<%= model.model %>?<%= view.focus %>"
+                        class="table-action-btn shareView panel_share"
+                        data-toggle="modal"
+                        data-target="#share-modal"
+                ><i class="fa fa-share"></i></a>
+            </td>
+        </tr>
+        <% }) %>
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+    $(function() {
+
+        $('.focusView').click(function() {
+
+            var link = $(this).data('link')
+
+            $.get(link)
+
+        })
+    })
+</script>

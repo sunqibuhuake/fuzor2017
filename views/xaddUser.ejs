@@ -1,0 +1,296 @@
+<%- include('global/xheader') %>
+
+<style>
+    .process {
+        padding-left: 10px;
+    }
+
+    .processing {
+        color: #ff9389;
+    }
+
+    .processDone {
+        color: #5fbf8f;
+    }
+</style>
+
+<div class="content-page">
+    <!-- Start content -->
+    <div class="content">
+        <div class="container">
+
+            <!-- Page-Title -->
+            <div class="row">
+                <div class="col-sm-12">
+                    <h4 class="page-title">添加模型</h4>
+                    <ol class="breadcrumb">
+                        <li>
+                            <a href="#">模型管理</a>
+                        </li>
+                        <li class="active">
+                            添加模型
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card-box">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <form method="post" class="form-horizontal" role="form">
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">用户名</label>
+                                        <div class="col-md-10">
+                                            <input type="text" class="form-control" name="name">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">昵称</label>
+                                        <div class="col-md-10">
+                                            <input type="text" class="form-control" name="nickname">
+                                        </div>
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">密码</label>
+                                        <div class="col-md-10">
+                                            <input type="password" class="form-control" name="password">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">重复密码</label>
+                                        <div class="col-md-10">
+                                            <input type="password" class="form-control" name="repassword">
+                                        </div>
+                                    </div>
+
+
+
+
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">用户简介</label>
+                                        <div class="col-md-10">
+                                            <textarea class="form-control" rows="5" name="intro"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group"><label class="col-sm-2 control-label">Input Select</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-control" name="authority">
+                                                <option value="a">管理员</option>
+                                                <option value="b">用户</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+
+                                    <input style="display: none;" id="model" name="model">
+                                    <input style="display: none;" id="snap" name="avatar">
+                                    <button type="submit" id="realSubmit" class="btn btn-success"
+                                            style="display: none;">确认添加
+                                    </button>
+                                </form>
+
+                                <div class="form-group">
+                                    <label class="col-md-2 control-label">上传模型文件<span
+                                                class="modelP processing process"></span></label>
+                                    <div class="col-md-10">
+                                        <input id="upload-input-model" type="file" class="form-control"
+                                               name="uploads[]"></br>
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label class="col-md-2 control-label">头像<span
+                                                class="modelS processing process"></span></label>
+                                    <div class="col-md-10">
+                                        <input id="upload-input-snap" type="file" class="form-control"
+                                               name="uploads[]"></br>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="pull-right">
+                                        <button id="fakeSubmit" type="button"
+                                                class="btn btn-default btn-rounded waves-effect waves-light">上传
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- container -->
+
+    </div> <!-- content -->
+
+    <footer class="footer">
+        2016 © 维阿科技
+    </footer>
+
+</div>
+
+<script>
+
+    $(function () {
+//
+//        var catsData = JSON.parse($('#catsData').val())
+//
+//        $('#cat').on('change', function() {
+//            var v = $(this).val()
+//
+//            catsData.cats.forEach(function(obj) {
+//                if(obj._id == v) {
+//
+//                    var arr = obj.children.map(function(o) {
+//                        return '<option value="' + o._id + '">' + o.name + '</option>';
+//                    })
+//                    $('#subcat').html(arr.join(''))
+//
+//                }
+//            })
+//
+//            console.log(v)
+//        })
+
+        $('#fakeSubmit').click(function () {
+
+            $('#realSubmit').click()
+
+        })
+
+        $('#upload-input-model').on('change', function () {
+
+            var files = $(this).get(0).files;
+
+            if (files.length > 0) {
+
+                var formData = new FormData();
+
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+
+                    // add the files to formData object for the data payload
+                    formData.append('uploads[]', file, file.name);
+                }
+
+                $.ajax({
+                    url: '/upload/model',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+
+                        console.log(data);
+
+                        if (data.status == 'success') {
+                            $('#model').val(data.file)
+                            $('.modelP').removeClass('processing').addClass('processDone')
+                            $('.modelP').html('上传完成');
+                        } else {
+                            $('.modelP').html('上传出错!');
+                        }
+
+                    },
+                    xhr: function () {
+                        // create an XMLHttpRequest
+                        var xhr = new XMLHttpRequest();
+
+                        // listen to the 'progress' event
+                        xhr.upload.addEventListener('progress', function (evt) {
+
+                            if (evt.lengthComputable) {
+                                // calculate the percentage of upload completed
+                                var percentComplete = evt.loaded / evt.total;
+                                percentComplete = parseInt(percentComplete * 100);
+
+                                // update the Bootstrap progress bar with the new percentage
+                                $('.modelP').html('进度 : ' + percentComplete + '%');
+
+                                // once the upload reaches 100%, set the progress bar text to done
+                                if (percentComplete === 100) {
+                                    $('.modelP').html('服务器正在压缩数据');
+                                }
+
+                            }
+
+                        }, false);
+
+                        return xhr;
+                    }
+                });
+            }
+
+        });
+
+        $('#upload-input-snap').on('change', function () {
+
+            var files = $(this).get(0).files;
+
+            if (files.length > 0) {
+
+                var formData = new FormData();
+
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+
+                    // add the files to formData object for the data payload
+                    formData.append('uploads[]', file, file.name);
+                }
+
+                $.ajax({
+                    url: '/upload/img',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        $('#snap').val(data.file)
+                        console.log('upload successful!');
+                    },
+                    xhr: function () {
+                        // create an XMLHttpRequest
+                        var xhr = new XMLHttpRequest();
+
+                        // listen to the 'progress' event
+                        xhr.upload.addEventListener('progress', function (evt) {
+
+                            if (evt.lengthComputable) {
+                                // calculate the percentage of upload completed
+                                var percentComplete = evt.loaded / evt.total;
+                                percentComplete = parseInt(percentComplete * 100);
+
+                                // update the Bootstrap progress bar with the new percentage
+                                $('.modelS').html('进度 : ' + percentComplete + '%');
+
+                                // once the upload reaches 100%, set the progress bar text to done
+                                if (percentComplete === 100) {
+                                    $('.modelS').removeClass('processing').addClass('processDone')
+                                    $('.modelS').html('上传完成');
+                                }
+
+                            }
+
+                        }, false);
+
+                        return xhr;
+                    }
+                });
+            }
+
+        });
+
+    })
+
+
+</script>
+
+<%- include('global/xfooter') %>

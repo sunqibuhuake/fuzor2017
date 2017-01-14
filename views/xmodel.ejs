@@ -1,0 +1,163 @@
+<%- include('global/xheader') %>
+<div class="content-page">
+    <!-- Start content -->
+    <div class="content">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12">
+                    <h4 class="page-title">模型管理</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="row">
+                    <div class="col-md-4">
+                        <%- include('model/meta.ejs') %>
+                    </div>
+                    <div class="col-md-8">
+                        <%- include('model/data.ejs') %>
+                        <div class="panel panel-border panel-custom" style="display: none;">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">数据详情</h3>
+                            </div>
+                            <div class="panel-body">
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <form method="post" action="/models/save" class="form-horizontal" role="form">
+
+                                            <div class="form-group">
+                                                <label class="col-md-2 control-label">模型介绍</label>
+                                                <div class="col-md-10">
+                                                    <textarea class="form-control" rows="5" id="model_data"
+                                                              name="data"></textarea>
+                                                </div>
+                                            </div>
+
+                                            <input style="display: none;" id="model" name="model_id"
+                                                   value="<%= model._id %>">
+
+                                            <button type="submit" id="realSubmit" class="btn btn-success"
+                                                    style="display: none;">确认添加
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div> <!-- container -->
+
+    </div> <!-- content -->
+
+</div>
+
+<div id="modifyView" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" style="width:55%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">类型修改</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <form id="attachment-form-view" action="/management/modify/cat" method="post" class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">新分类名称</label>
+                                <div class="col-md-10">
+                                    <input type="text" class="form-control" name="name">
+                                </div>
+                            </div>
+                            <input style="display: none;" id="input-cid" name="cid" value="">
+                            <input style="display: none;" id="input-sbid" name="sbid" value="">
+
+                            <button type="submit" id="realSubmit-modify" class="btn btn-success"
+                                    style="display: none;">确认
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">取消</button>
+                <button id="fakeSubmit-modify" type="button" class="btn btn-primary waves-effect waves-light" data-dismiss="modal">确认</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+<div id="modifyModel" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" style="width:55%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">类型修改</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <form id="attachment-form-view" action="/management/modify/cat" method="post" class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">新分类名称</label>
+                                <div class="col-md-10">
+                                    <input type="text" class="form-control" name="name">
+                                </div>
+                            </div>
+                            <input style="display: none;" id="input-cid" name="cid" value="">
+                            <input style="display: none;" id="input-sbid" name="sbid" value="">
+
+                            <button type="submit" id="realSubmit-modify" class="btn btn-success"
+                                    style="display: none;">确认
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">取消</button>
+                <button id="fakeSubmit-modify" type="button" class="btn btn-primary waves-effect waves-light" data-dismiss="modal">确认</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+<script src="/fuzor/fuzor.js"></script>
+<script src="/fuzor/x2j.js"></script>
+<script>
+    var fuzor = new Fuzor()
+
+    var data_status = false
+
+    $('#getModelData').click(function () {
+
+        $('#guide').html('正在获取数据请稍等...').css('color', 'red');
+
+
+        fuzor.getModelData(function (data) {
+
+            $('#guide').html('获取数据成功，请点击保存按钮').css('color','green');
+
+
+            console.log(data)
+            $('#model_data').val(JSON.stringify({data: data}))
+        })
+    })
+
+    $('#saveData').click(function () {
+
+        $('#guide').html('数据正在上传，请稍候').css('color','red');
+
+        $('#realSubmit').click()
+    })
+
+
+</script>
+
+
+<%- include('global/xfooter') %>

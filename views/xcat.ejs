@@ -1,0 +1,212 @@
+<%- include('global/xmanageheader') %>
+<div class="content-page">
+    <!-- Start content -->
+    <div class="content">
+        <div class="container">
+
+            <div class="row" >
+                <div class="col-md-12" style="margin-bottom: 16px;">
+
+                    <div class="col-md-8">
+                        <h4 class="page-title">分类管理</h4>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="pull-right">
+                            <button id="add-cat-btn" type="button" class="btn btn-primary waves-effect waves-light"
+                                    data-toggle="modal" data-target="#add-cat">添加大类
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-12">
+                    <div class="tabs-vertical-env">
+                        <ul class="nav tabs-vertical">
+
+                            <% cats.forEach(function(cat, index) { %>
+                            <li class="<%= index == 0 ? 'active' : '' %>">
+                                <a href="#<%= cat._id %>" data-toggle="tab" aria-expanded="true">
+                                    <span class="visible-xs"><i class="fa fa-home"></i></span>
+                                    <span class="hidden-xs"><b><%= cat.name %></b> <span
+                                                class="badge badge-primary m-l-10"><%= cat.subcats.length %></span></span>
+                                </a>
+                            </li>
+                            <% }) %>
+
+                        </ul>
+                        <div class="tab-content" id="cats-container" style="width: 100%">
+
+                            <% cats.forEach(function(cat, index) { %>
+                            <div class="tab-pane <%= index == 0 ? ' active' : '' %>" id="<%= cat._id %>">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <%- include('xsubcatlist',{subcats:cat.subcats}) %>
+
+                                        <div class="pull-right">
+
+                                            <button type="button"
+                                                    class="catmodify btn btn-primary btn-rounded waves-effect waves-light"
+                                                    data-toggle="modal" data-target="#modify"
+                                                    data-cid="<%= cat._id %>" data-type="cat">修改大类名称
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-primary btn-rounded waves-effect waves-light"
+                                                    data-toggle="modal" data-target="#add-cat"
+                                                    data-pid="<%= cat._id %>">添加子类
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="clearfix"></div>
+
+                            </div>
+                            <% }) %>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- container -->
+
+    </div> <!-- content -->
+
+</div>
+
+
+<div id="add-cat" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel"
+     aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" style="width:55%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">添加子类</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <form id="attachment-form-view" method="post" action="/management/addCat"
+                              class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label id="cat-name" class="col-md-2 control-label"></label>
+                                <div class="col-md-10">
+                                    <input type="text" class="form-control" name="name">
+                                </div>
+                            </div>
+
+
+                            <input style="display: none;" id="sub-cat-pid-input" name="pid">
+                            <div class="pull-right">
+                                <button type="submit" id="realSubmit-view" class="btn btn-success"
+                                >确认添加
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<div id="modify" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" style="width:55%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">类型修改</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <form id="attachment-form-view" action="/management/modify/cat" method="post" class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">新分类名称</label>
+                                <div class="col-md-10">
+                                    <input type="text" class="form-control" name="name">
+                                </div>
+                            </div>
+                            <input style="display: none;" id="input-cid" name="cid" value="">
+                            <input style="display: none;" id="input-sbid" name="sbid" value="">
+
+                            <button type="submit" id="realSubmit-modify" class="btn btn-success"
+                                    style="display: none;">确认
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">取消</button>
+                <button id="fakeSubmit-modify" type="button" class="btn btn-primary waves-effect waves-light" data-dismiss="modal">确认</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+
+<script>
+
+    $(function () {
+
+        $('.catmodify').click(function() {
+
+            var cid = $(this).data('cid')
+
+            var type = $(this).data('type')
+
+            console.log(cid, type)
+
+            $('#input-cid').val('')
+
+            $('#input-sbid').val('')
+
+            if(type == 'sub') {
+
+                $('#input-sbid').val(cid)
+
+            } else {
+                $('#input-cid').val(cid)
+            }
+
+        })
+
+        $('#fakeSubmit-modify').click(function() {
+
+            $('#realSubmit-modify').click()
+        })
+
+        $('#cats-container').click(function (e) {
+
+            var $tg = $(e.target || e.srcElement), pid;
+
+            if (!(pid = $tg.data('pid'))) return;
+
+            setCatModalInfo('添加子类', pid);
+
+        })
+
+        $('#add-cat-btn').click(function () {
+
+            setCatModalInfo('添加大类', '');
+
+        })
+
+        function setCatModalInfo(name, pid) {
+            $('#cat-name').text(name);
+            $('#sub-cat-pid-input').val(pid)
+        }
+
+    })
+
+</script>
+
+<%- include('global/xfooter') %>

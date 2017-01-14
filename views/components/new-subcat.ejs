@@ -1,0 +1,23 @@
+<section class="box ">
+    <header class="panel_header">
+        <h2 class="title pull-left">添加子类</h2>
+        <div class="actions panel_actions pull-right">
+        </div>
+    </header>
+    <div class="content-body">
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <form role="form" class="form-inline" action="/admin/subcat" method="post">
+                    <div class="form-group">
+                        <input name="name" type="text" class="form-control" placeholder="子类名称">
+                        <input name="parentId"  type="text" class="form-control" style="display: none;" value="<%= parentId %>" placeholder="子类名称">
+                    </div>
+
+                    <div class="form-group pull-right">
+                        <button type="submit" class="btn btn-primary ">添加</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

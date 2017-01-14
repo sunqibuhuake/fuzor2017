@@ -1,0 +1,105 @@
+<div class="card-box m-t-20">
+    <h4 class="m-t-0 header-title"><b>基础数据</b></h4>
+    <div class="p-20">
+        <div class="about-info-p">
+            <strong><%= model.name %></strong>
+        </div>
+        <div class="about-info-p">
+            <img src="/img/<%= model.snap %>" alt="image" class="img-responsive img-rounded">
+        </div>
+        <div class="about-info-p">
+            <p class="text-muted"><%= model.catName %> | <%= model.subcatName %></p>
+        </div>
+        <div class="about-info-p">
+            <p class="text-muted"><%= model.intro %></p>
+        </div>
+
+        <% if(!model.hasData) { %>
+        <div class="row">
+            <div class="col-md-4">
+                <a href="fuzor://<%= model.model %>">
+                    <button type="button" class="btn btn-white waves-effect"
+                            style="width: 100%;">激活
+                    </button>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <button id="getModelData" type="button" class="btn btn-white waves-effect"
+                        style="width: 100%;">获取
+                </button>
+            </div>
+            <div class="col-md-4">
+                <button id="saveData" type="button" class="btn btn-white waves-effect"
+                        style="width: 100%;">保存
+                </button>
+            </div>
+        </div>
+        <p id="guide"></p>
+        <% } else  { %>
+
+        <p style="color: green;">模型数据已保存</p>
+        <a href="/panel/<%= model._id %>">
+            <button type="button" class="btn btn-white waves-effect"
+                    style="width: 100%;">
+                前往fuzor交互面板
+            </button>
+        </a>
+        <% } %>
+
+        <div class="row">
+            <div class="col-md-4">
+                <a href="/models/modify/<%= model._id %>">
+                    <button type="button" class="btn btn-white waves-effect"
+                            style="width: 100%;">替换
+                    </button>
+                </a>
+            </div>
+
+            <!--<div class="col-md-4">-->
+            <!--<button id="getModelData" type="button" class="btn btn-white waves-effect"-->
+            <!--style="width: 100%;">获取-->
+            <!--</button>-->
+            <!--</div>-->
+            <div class="col-md-4">
+                <button type="button" class="btn btn-white waves-effect"
+                        data-toggle="modal"
+                        data-target="#deleteConfirm"
+                        style="width: 100%;">删除
+                </button>
+
+            </div>
+        </div>
+
+        <!--<a href="/models/modify/<%= model._id %>">-->
+        <!--<button type="button"-->
+        <!--data-toggle="modal"-->
+        <!--data-target="#modifyModel"-->
+        <!--class="btn btn-white waves-effect"-->
+        <!--style="width: 100%;margin-top:10px;">-->
+        <!--替换模型-->
+        <!--</button>-->
+        <!--</a>-->
+    </div>
+</div>
+
+<div id="deleteConfirm" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog"
+     aria-labelledby="mySmallModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="mySmallModalLabel">确认</h4>
+            </div>
+            <div class="modal-body">
+                您要删除该模型吗?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">取消</button>
+                <a href="/models/<%= model._id %>/delete">
+                    <button type="button" class="btn btn-info waves-effect waves-light">确认</button>
+                </a>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

@@ -1,0 +1,14 @@
+<div class="col-sm-4 col-md-3">
+    <div class="team-member ">
+        <div class="team-img">
+            <img class="img-responsive" src="/img/<%= user.avatar %>" alt="">
+        </div>
+        <div class="team-info">
+            <h3><%= user.name %></h3>
+            <span><%= ({a:'管理员',b:'普通用户',c:'游客'})[user.authority] %></span>
+        </div>
+        <ul class="social-icons list-inline list-unstyled">
+            <li><a href="/management/deleteUser/<%= user._id %>"><i class="fa fa-trash icon-bordered icon-danger icon-xs"></i></a></li>
+        </ul>
+    </div>
+</div>

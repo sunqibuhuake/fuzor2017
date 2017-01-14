@@ -1,0 +1,503 @@
+<script>
+
+    $(function() {
+
+        var modelUrl = $('#input-model-url').val();
+
+
+
+        function getCameraInfo(cb) {
+            $.ajax({
+                url: 'http://localhost:45190/camera',
+                method: 'get',
+                dataType: 'xml',
+                success: function(data) {
+
+                    var raw_position = data.getElementsByTagName('position')[0].innerHTML.split(' ');
+
+                    var position = {
+                        x: raw_position[0] - 0,
+                        y: raw_position[1] - 0,
+                        z: raw_position[2] - 0
+                    }
+
+                    var raw_direction = data.getElementsByTagName('direction')[0].innerHTML.split(' ');
+
+                    var direction = {
+                        x: raw_direction[0] - 0,
+                        y: raw_direction[1] - 0,
+                        z: raw_direction[2] - 0
+                    }
+
+                    var vertical_fov = data.getElementsByTagName('vertical-fov')[0].innerHTML - 0
+
+                    var horizontal_fov = data.getElementsByTagName('horizontal-fov')[0].innerHTML - 0
+
+                    cb(position, direction, vertical_fov, horizontal_fov)
+
+                }
+
+            })
+
+        }
+
+        /*
+         * 点击上传构建附件
+         * */
+
+        $('#component-attachment-upload-btn').click(function () {
+
+            $('#input-objectId').data('record', 'record')
+
+        })
+
+        /*
+         * 点击上传模型附件
+         * */
+
+        $('#model-attachment-save-btn').click(function () {
+
+            $('#input-objectId').data('record', 'none')
+
+        })
+
+        $('#fakeSubmit').click(function () {
+
+            var $objectIdInput = $('#input-objectId');
+
+            if($objectIdInput.data('record') === 'record') {
+                $objectIdInput.val(getObjectId())
+
+            } else {
+                $objectIdInput.val('')
+
+            }
+
+            var arr = $('#attachment-form').serializeArray(), payload = {};
+
+            arr.forEach(function (item) {
+
+                payload[item.name] = item.value
+
+            })
+
+            console.log(payload)
+
+            $.ajax({
+                url: '/panel/upload',
+                method: 'post',
+                data: payload,
+                success: function (data) {
+                    console.log(data);
+                }
+            })
+
+        })
+
+        $('#fakeSubmit-view').click(function () {
+
+            $('#input-objectId-view').val(getObjectId())
+
+            var arr = $('#attachment-form-view').serializeArray(), payload = {};
+
+            arr.forEach(function (item) {
+
+                payload[item.name] = item.value
+
+            })
+
+
+            $.ajax({
+                url: '/panel/uploadView',
+                method: 'post',
+                data: payload,
+                success: function (data) {
+                    console.log(data);
+                }
+            })
+
+        })
+
+        $('#upload-input-attachment').on('change', function () {
+
+            var files = $(this).get(0).files;
+
+            $('#originName').val(files[0].name);
+
+            $('#input-size').val(files[0].size);
+
+            upload('/upload/attachment', files, function (data) {
+                $('#attachmentFile').val(data.file)
+            })
+
+        });
+
+        $('#upload-view-image').on('change', function () {
+
+            var files = $(this).get(0).files;
+
+            upload('/upload/img', files, function (data) {
+                $('#attachmentFile-view').val(data.file)
+            })
+
+        });
+
+        $('#sidebar-menu').click(function (e) {
+
+            var tg = $(e.target || e.srcElement), objectId, modelId;
+
+            if(!tg.hasClass('real-component')) return;
+
+            objectId = tg.data('id');
+
+            modelId = $('#model-id-container').val();
+
+            if(!objectId || !modelId) return;
+
+            setObjectId(objectId);
+
+            fetchContentData(modelId, objectId)
+
+        })
+
+        function customUpload(url, files, cb) {
+
+            if(files.length < 0) return;
+
+            if(!url) return;
+
+            var formData = new FormData(), file;
+
+            for (var i = 0; i < files.length; i++) {
+                file = files[i];
+                formData.append('uploads[]', file, file.name);
+            }
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+
+                    console.log(data);
+
+                    if (data.status == 'success') {
+                        typeof cb === 'function' ? cb(data) : "";
+                        $('.attachmentP').removeClass('processing').addClass('processDone')
+                        $('.attachmentP').html('上传完成');
+                    } else {
+                        $('.attachmentP').html('上传出错!');
+                    }
+
+                },
+                xhr: function () {
+                    // create an XMLHttpRequest
+                    var xhr = new XMLHttpRequest();
+
+                    // listen to the 'progress' event
+                    xhr.upload.addEventListener('progress', function (evt) {
+
+                        if (evt.lengthComputable) {
+                            // calculate the percentage of upload completed
+                            var percentComplete = evt.loaded / evt.total;
+                            percentComplete = parseInt(percentComplete * 100);
+
+                            // update the Bootstrap progress bar with the new percentage
+                            $('.attachmentP').html('进度 : ' + percentComplete + '%');
+
+                            // once the upload reaches 100%, set the progress bar text to done
+                            if (percentComplete === 100) {
+                                $('.attachmentP').html('服务器正在压缩数据');
+                            }
+
+                        }
+
+                    }, false);
+
+                    return xhr;
+                }
+            });
+        }
+
+        function fetchContentData(modelId, objectId) {
+
+            if(!modelId || !objectId) return;
+
+            $.ajax({
+                url: '/panel/detail/'+modelId+'/'+objectId,
+                success: function (data) {
+
+                    if(data.message === 'error') return;
+
+                    fillDetailsForComponent(data.data)
+
+                },
+                error: function (xhr, status, err) {
+
+                }
+            })
+
+        }
+
+        function fillDetailsForComponent(data) {
+
+            var info = data.info, attachments = data.attachments, views = data.views;
+
+            var usefulKeys = Object.keys(info).filter(function (key) {
+                return !/__/.test(key)
+            })
+
+            var detailsTBody = usefulKeys.map(function (key, index) {
+                return '<tr><th scope="row">'+(index+1)+'</th>' +
+                        '<td>'+key+'</td>' +
+                        '<td>'+info[key]+'</td></tr>'
+            });
+
+            var attachmentTBody = attachments.map(function (attachment) {
+                return '<tr>' +
+                        '<td><img src="'+(attachment.logo)+'" class="thumb-sm" alt=""> </td>' +
+                        '<td>'+attachment.originName+'</td>' +
+                        '<td>'+getFileType(attachment.type)+'</td>' +
+                        '<td>' +
+                        '<b>'+ attachment.size +'</b>' +
+                        '</td>' +
+                        '<td>' +
+//                        '<span class="label label-success">Deliverd</span>' +
+                        attachment.date +
+                        '</td>' +
+                        '<td>' +
+                        getActionsHTML(attachment.type) +
+                        '</td>' +
+                        '</tr>'
+            })
+
+            var viewsBody = views.map(function (view) {
+                return '<div class="viewItem">' +
+                        '<img src="/img/'+view.img+'" alt="image" class="img-responsive img-rounded">' +
+                        '<p class="m-t-15 m-b-0">' +
+                        view.name +
+                        '</p>' +
+                        '<div class="button-list" style="margin-bottom: 6px">' +
+                        '<button data-link="http://localhost:45190/execute?' +view.focus+ '" class="focusView btn btn-icon waves-effect waves-light btn-primary"> <i class="fa fa-eye"></i> </button>' +
+                        '<button data-link="fuzor://'+modelUrl + '?' + view.focus+ '" data-toggle="modal" data-target="#share-modal" class="shareView btn btn-icon waves-effect waves-light btn-primary"> <i class="fa fa-share"></i> </button>' +
+                        '</div>' +
+                        '</div>'
+            })
+
+            $('#component-details').html(detailsTBody);
+
+            $('#attachment-tbody').html(attachmentTBody);
+
+            //$('#views-container').html(viewsBody);
+
+
+
+        }
+
+        function getFileType(extension) {
+            var type = ''
+            try {
+                type = extension.match(/\w+$/)[0]
+            } catch (err) {
+                type = '未知'
+            }
+            return type
+        }
+
+        function getFileSize(bytes) {
+
+            if(!bytes) return 0;
+
+            bytes = parseInt(bytes);
+
+            if(isNaN(bytes)) return bytes;
+
+            if(bytes > 1024*1024) {
+                return (bytes/1024/1024).toFixed(2) + 'mb'
+            }
+
+            return Math.floor(bytes/1024) + 'kb'
+
+        }
+
+        function getFileLogo(extension) {
+
+            if(!isAvailableFile(extension)) {
+                return '/filetype/default.png'
+            }
+
+            var fileType = getFileType(extension);
+
+            switch(fileType) {
+                case 'jpeg' :
+                case 'jpg'  :
+                case 'png'  :
+                    return '/filetype/pic.png'
+                case 'mp4'  :
+                    return '/filetype/video.png'
+                case 'pdf'  :
+                    return '/filetype/pdf.png'
+                case 'zip'  :
+                    return '/filetype/zip.png'
+                case 'ppt'  :
+                    return '/filetype/ppt.png'
+                case 'audio':
+                    return '/filetype/audio.png'
+                case 'excel':
+                    return '/filetype/excel.png'
+            }
+
+            return '/filetype/default.png'
+
+        }
+
+
+        $('.focusView').click(function() {
+
+            var link = $(this).data('link')
+
+            $.get(link);
+        })
+
+        $('.shareView').click(function() {
+            var link = $(this).data('link')
+            $('#clipboard-input').val(link)
+        })
+
+        function getActionsHTML(extension) {
+
+            var actions = getFileActions(extension);
+
+            var icons = {
+                download: 'ti ti-download',
+                preview: 'ti ti-eye'
+            }
+
+            return actions.map(function (action) {
+                return '<a href="#" class="table-action-btn"><i class="ti ti-'+icons[action]+'" style="font-size: 14px;"></i></a>'
+            }).join('')
+
+        }
+
+        function getFileActions(extension) {
+
+            var actions = ['download'];
+
+            if(!previewable(extension)) {
+                return actions
+            }
+
+            actions.push('preview');
+
+            return actions;
+        }
+
+        function previewable(extension) {
+            return /(jpeg|jpg|png|mp4|pdf)/.test(extension)
+        }
+
+        function isAvailableFile(extension) {
+            return /(jpeg|jpg|png|mp4|pdf|zip|ppt|audio|excel)/.test(extension)
+        }
+
+        function getHash() {
+            try {
+                return window.location.hash.match(/[^#]+/)[0]
+            } catch (err) {
+                return null
+            }
+        }
+
+        function expandMenu($ul, level) {
+
+            var $li = $($ul.children('.menu-item')[level]);
+
+            if(!$li) return null;
+
+            var $a = $li.children('a').addClass('subdrop');
+
+            return {
+                $ul: $li.children('ul').css('display', 'block'),
+                objectId: $a.data('id')
+            }
+
+        }
+
+        function recursionExpandMenu($ul, levels) {
+
+            if(levels.length === 0) return;
+
+            var result = expandMenu($ul, levels[0]);
+
+            levels.splice(0, 1);
+
+            if(!result) return;
+
+            if(result.objectId) return result.objectId;
+
+            return recursionExpandMenu(result.$ul, levels);
+
+        }
+
+        function initMenuAndContent() {
+
+            var hash = getHash();
+
+            if(!hash) return;
+
+            var levels = hash.split('-');
+
+            var objectId = recursionExpandMenu($('#sidebar-menu ul'), levels);
+
+            var modelId = $('#model-id-container').val();
+
+            setObjectId(objectId);
+
+            fetchContentData(modelId, objectId)
+
+        }
+
+        function setObjectId(id) {
+            $('#current-object-id-container').val(id);
+        }
+
+        function getObjectId() {
+            return $('#current-object-id-container').val();
+        }
+
+        initMenuAndContent();
+
+        new Clipboard('.clipboard-btn');
+
+        $('#component-share-btn').click(function () {
+            $('#clipboard-input').val(window.location.href)
+        })
+
+        $('#model-share-btn').click(function() {
+            var link = $(this).data('link')
+            $('#clipboard-input').val(link)
+        })
+
+        $('#view-save-btn').click(function() {
+
+            /*
+             * 调取fuzor api 获取基础信息
+             * */
+
+            getCameraInfo(function(pos, dir, v, h) {
+
+                $('#input-pos').val(pos.x + ':' + pos.y + ':' + pos.z )
+                $('#input-dir').val(dir.x + ':' + dir.y + ':' + dir.z )
+                $('#input-vertical').val(v)
+                $('#input-horizontal').val(h)
+
+            })
+        });
+
+
+
+    })
+
+</script>

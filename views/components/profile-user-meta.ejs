@@ -1,0 +1,20 @@
+<div class="col-md-3 col-sm-4 col-xs-12">
+    <div class="uprofile-image">
+        <img src="<%= user.avatar %>" class="img-responsive">
+    </div>
+    <div class="uprofile-name">
+        <h3>
+            <a href="#"><%= user.nickname %></a>
+            <!-- Available statuses: online, idle, busy, away and offline -->
+            <span class="uprofile-status online"></span>
+        </h3>
+        <p class="uprofile-title"><%= ({a: '管理员', b:'用户', c:'其他'})[user.authority] %></p>
+    </div>
+
+    <div class="uprofile-buttons">
+        <a class="btn btn-md btn-primary">修改密码</a>
+        <a class="btn btn-md btn-primary">修改头像</a>
+        <a class="btn btn-md btn-primary">修改用户名</a>
+    </div>
+
+</div>

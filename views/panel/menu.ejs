@@ -1,0 +1,179 @@
+<h4 class="header-title m-t-0"><b>操作</b></h4>
+<div class="p-20">
+    <div class="row">
+        <div class="col-md-6 col-sm-12">
+            <a
+                    id="focus_model"
+                    href="fuzor://<%= model.model %>"
+                    data-base="fuzor://<%= model.model %>"
+            >
+                <button class="btn btn-block btn-sm btn-success waves-effect  waves-light mb6">定位模型</button>
+            </a>
+        </div>
+        <div class="col-md-6 col-sm-12">
+            <button
+                    id="model-share-btn"
+                    data-link="fuzor://<%= model.model %>"
+                    class="panel_share btn btn-block btn-sm btn-success waves-effect  waves-light mb6"
+                    data-toggle="modal"
+                    data-target="#share-modal"
+            >
+                模型分享
+            </button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-sm-12">
+            <button
+                    id="component-share-btn"
+                    class="btn btn-block btn-sm btn-success waves-effect  waves-light mb6"
+                    data-toggle="modal"
+                    data-target="#share-modal"
+            >
+                构件分享
+            </button>
+        </div>
+        <div class="col-md-6 col-sm-12">
+            <button
+                    data-objectid=""
+                    id="model-attachment-save-btn"
+                    class="panel_upload_attach btn btn-block btn-sm btn-success waves-effect  waves-light mb6"
+                    data-toggle="modal"
+                    data-target="#attachment-upload-modal">
+                附件上传
+            </button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-sm-12">
+            <button
+                    id="view-save-btn"
+                    class="btn btn-block btn-sm btn-success waves-effect  waves-light mb6"
+                    data-toggle="modal"
+                    data-target="#save-view"
+            >
+                保存视点
+            </button>
+        </div>
+
+        <div class="col-md-6 col-sm-12">
+            <button
+                    id="view-save-btn2"
+                    class="btn btn-block btn-sm btn-success waves-effect  waves-light mb6"
+                    data-toggle="modal"
+                    data-target="#save-view"
+            >
+                保存构件视点
+            </button>
+        </div>
+    </div>
+</div>
+<%- include('./modal_save_view') %>
+<%- include('./upload_attach_modal') %>
+
+<script>
+
+
+
+
+    $(function() {
+
+//        $('.panel_upload_attach').click(function() {
+//
+//            var objectid = $(this).data('objectid')
+//
+//            $('#input-objectId').val(objectid)
+//
+//        })
+
+
+
+        $('#view-save-btn').click(function() {
+
+            $('#input-view-objectId').val('')
+
+            /*
+             * 调取fuzor api 获取基础信息
+             * */
+
+            getCameraInfo(function(pos, dir, v, h) {
+
+                $('#input-pos').val(pos.x + ':' + pos.y + ':' + pos.z )
+                $('#input-dir').val(dir.x + ':' + dir.y + ':' + dir.z )
+                $('#input-vertical').val(v)
+                $('#input-horizontal').val(h)
+
+            })
+        });
+
+        $('#view-save-btn2').click(function() {
+
+            /*
+             * 调取fuzor api 获取基础信息
+             * */
+
+            var objectId = $(this).data('objectid')
+
+            if(!objectId) {
+
+                alert('您未选择构件,将以普通视点形式保存!')
+            }
+
+            $('#input-view-objectId').val(objectId)
+
+            getCameraInfo(function(pos, dir, v, h) {
+
+                $('#input-pos').val(pos.x + ':' + pos.y + ':' + pos.z )
+                $('#input-dir').val(dir.x + ':' + dir.y + ':' + dir.z )
+                $('#input-vertical').val(v)
+                $('#input-horizontal').val(h)
+
+            })
+        });
+
+
+        /*
+        * 获取摄像机数据
+        * */
+        function getCameraInfo(cb) {
+            $.ajax({
+                url: 'http://localhost:45190/camera',
+                method: 'get',
+                dataType: 'xml',
+                success: function(data) {
+
+                    var raw_position = data.getElementsByTagName('position')[0].innerHTML.split(' ');
+
+                    var position = {
+                        x: raw_position[0] - 0,
+                        y: raw_position[1] - 0,
+                        z: raw_position[2] - 0
+                    }
+
+                    var raw_direction = data.getElementsByTagName('direction')[0].innerHTML.split(' ');
+
+                    var direction = {
+                        x: raw_direction[0] - 0,
+                        y: raw_direction[1] - 0,
+                        z: raw_direction[2] - 0
+                    }
+
+                    var vertical_fov = data.getElementsByTagName('vertical-fov')[0].innerHTML - 0
+
+                    var horizontal_fov = data.getElementsByTagName('horizontal-fov')[0].innerHTML - 0
+
+                    cb(position, direction, vertical_fov, horizontal_fov)
+
+                },
+                error: function() {
+                    alert('未能获得摄像机数据,请确认fuzor已经启动!')
+                }
+
+            })
+
+        }
+
+
+
+    })
+</script>

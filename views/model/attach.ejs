@@ -1,0 +1,39 @@
+<div class="card-box m-t-20">
+    <div class="p-20">
+        <div class="table-responsive">
+            <table class="table table-actions-bar">
+                <thead>
+                <tr>
+                    <th>图标</th>
+                    <th>文件名</th>
+                    <th>类型</th>
+                    <th>大小</th>
+                    <th>时间</th>
+                    <th style="min-width: 80px;">操作</th>
+                </tr>
+                </thead>
+
+                <tbody id="attachment-tbody">
+
+                <% attachments.forEach(function(file){ %>
+
+                <tr>
+                    <td><img src="<%= file.logo %>" class="thumb-sm" alt=""></td>
+                    <td><%= file.name %></td>
+                    <td><%= file.type %></td>
+                    <td><b> <%= file.size %></b></td>
+                    <td><%= file.date %></td>
+                    <td><a href="/attachments/<%= file.file %>" class="table-action-btn"><i class="ti ti-ti ti-download"
+                                                                                            style="font-size: 14px;"></i></a>
+                    </td>
+                </tr>
+                <tr>
+
+                    <% }) %>
+
+            </table>
+
+
+        </div>
+    </div>
+</div>

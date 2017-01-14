@@ -1,0 +1,49 @@
+<div id="share-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" style="width:55%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">分享</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="input-group m-t-10">
+                            <input type="text" id="clipboard-input" class="form-control" placeholder="链接地址">
+                        <span class="input-group-btn">
+                            <button type="button" class="clipboard-btn btn waves-effect waves-light btn-primary btn-white"  data-clipboard-target="#clipboard-input">
+                                <i class="fa fa-clipboard"></i>
+                            </button>
+                        </span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<script>
+    $(function() {
+
+        new Clipboard('.clipboard-btn');
+
+        $('.panel_share').click(function() {
+
+            var link = $(this).data('link')
+            $('#clipboard-input').val(link)
+        })
+
+        $('#component-share-btn').click(function() {
+            $('#clipboard-input').val(window.location.href)
+        })
+
+
+    })
+</script>

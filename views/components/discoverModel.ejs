@@ -1,0 +1,19 @@
+<div class="col-sm-4 col-md-3">
+
+    <div class="team-member " style="width: 100%;">
+        <a href="/models/<%= model._id %>">
+            <div class="model-snap"
+                 style="height:120px;background: url('/img/<%= model.snap %>');background-position: center;background-size: cover;background-repeat: no-repeat;">
+            </div>
+        </a>
+        <div class="team-info">
+            <a href="/models/<%= model._id %>">
+                <h5><%= model.name %></h5>
+            </a>
+            <!--<span></span>-->
+        </div>
+        <ul class="social-icons list-inline list-unstyled">
+            <li><a href="models/<%= model._id %>/collect"><i class="fa fa-star-o icon-bordered icon-orange icon-xs"></i></a></li>
+        </ul>
+    </div>
+</div>

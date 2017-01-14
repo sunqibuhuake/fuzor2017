@@ -1,0 +1,274 @@
+<%- include('global/xheader') %>
+
+<style>
+    .process {
+        padding-left: 10px;
+    }
+    .processing {
+        color: #ff9389;
+    }
+    .processDone {
+        color: #5fbf8f;
+    }
+</style>
+
+<section id="main-content" class=" ">
+    <section class="wrapper" style='margin-top:60px;display:inline-block;width:100%;padding:15px 0 0 15px;'>
+
+        <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12'>
+            <div class="page-title">
+
+                <div class="pull-left">
+                    <h1 class="title">上传模型</h1>
+                </div>
+
+            </div>
+        </div>
+        <div class="clearfix"></div>
+
+        <div class="col-lg-12">
+            <section class="box ">
+                <header class="panel_header">
+                </header>
+                <div class="content-body">
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+
+
+                            <form id="msg_validate" method="post" novalidate="novalidate">
+
+                                <div class="form-group">
+                                    <label class="form-label" for="formfield1">模型名称</label>
+                                    <div class="controls">
+                                        <input type="text" class="form-control" id="formfield1" name="name">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="field-7">介绍</label>
+                                    <div class="controls">
+                                        <textarea name="intro" class="form-control autogrow" cols="5" id="field-7"
+                                                  placeholder=""
+                                                  style="overflow: hidden; word-wrap: break-word; resize: horizontal; height: 54px;"></textarea>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="form-group">
+                                    <label class="form-label" for="field-7">一级类别</label>
+                                    <div class="controls">
+                                        <select name="cat" id="cat" class="form-control input-sm m-bot15">
+                                            <% cats.forEach(function(cat){ %>
+                                            <option value="<%= cat._id %>"><%= cat.name %></option>
+
+                                            <% }) %>
+
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="field-7">二级类别</label>
+                                    <div class="controls">
+                                        <select name="subcat" id="subcat" class="form-control input-sm m-bot15">
+                                            <% cats[0].children.forEach(function(subcat){ %>
+                                            <option value="<%= subcat._id %>"><%= subcat.name %></option>
+                                            <% }) %>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <input style="display: none;" id="model" name="model">
+                                <input style="display: none;" id="snap" name="snap">
+                                <button type="submit" id="realSubmit" class="btn btn-success" style="display: none;">确认添加</button>
+                            </form>
+
+                            <div class="form-group">
+                                <label class="form-label" for="field-7">上传模型<span class="modelP processing process"></span></label>
+                                <div class="controls">
+                                    <input id="upload-input-model" type="file" class="form-control"
+                                           name="uploads[]"></br>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="field-7">上传模型图片 <span class="modelS processing process"></span></label>
+                                <div class="controls">
+                                    <input id="upload-input-snap" type="file" class="form-control"
+                                           name="uploads[]"></br>
+                                </div>
+                            </div>
+
+                            <div class="pull-right">
+                                <button id="fakeSubmit" class="btn btn-success">确认</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </section>
+</section>
+
+<input id='catsData' style="display: none;" value="<%= JSON.stringify({cats: cats}) %>">
+
+<script>
+
+    $(function () {
+
+//        var catsData = JSON.parse($('#catsData').val())
+//
+//        $('#cat').on('change', function() {
+//            var v = $(this).val()
+//
+//            catsData.cats.forEach(function(obj) {
+//                if(obj._id == v) {
+//
+//                    var arr = obj.children.map(function(o) {
+//                        return '<option value="' + o._id + '">' + o.name + '</option>';
+//                    })
+//                    $('#subcat').html(arr.join(''))
+//
+//                }
+//            })
+//
+//            console.log(v)
+//        })
+
+        $('#fakeSubmit').click(function() {
+
+            $('#realSubmit').click()
+
+        })
+
+        $('#upload-input-model').on('change', function () {
+
+            var files = $(this).get(0).files;
+
+            if (files.length > 0) {
+
+                var formData = new FormData();
+
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+
+                    // add the files to formData object for the data payload
+                    formData.append('uploads[]', file, file.name);
+                }
+
+                $.ajax({
+                    url: '/upload/model',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+
+                        console.log(data);
+
+                        if(data.status == 'success') {
+                            $('#model').val(data.file)
+                            $('.modelP').removeClass('processing').addClass('processDone')
+                            $('.modelP').html('上传完成');
+                        } else {
+                            $('.modelP').html('上传出错!');
+                        }
+
+                    },
+                    xhr: function () {
+                        // create an XMLHttpRequest
+                        var xhr = new XMLHttpRequest();
+
+                        // listen to the 'progress' event
+                        xhr.upload.addEventListener('progress', function (evt) {
+
+                            if (evt.lengthComputable) {
+                                // calculate the percentage of upload completed
+                                var percentComplete = evt.loaded / evt.total;
+                                percentComplete = parseInt(percentComplete * 100);
+
+                                // update the Bootstrap progress bar with the new percentage
+                                $('.modelP').html('进度 : ' + percentComplete + '%');
+
+                                // once the upload reaches 100%, set the progress bar text to done
+                                if (percentComplete === 100) {
+                                    $('.modelP').html('服务器正在压缩数据');
+                                }
+
+                            }
+
+                        }, false);
+
+                        return xhr;
+                    }
+                });
+            }
+
+        });
+
+        $('#upload-input-snap').on('change', function () {
+
+            var files = $(this).get(0).files;
+
+            if (files.length > 0) {
+
+                var formData = new FormData();
+
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+
+                    // add the files to formData object for the data payload
+                    formData.append('uploads[]', file, file.name);
+                }
+
+                $.ajax({
+                    url: '/upload/img',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        $('#snap').val(data.file)
+                        console.log('upload successful!');
+                    },
+                    xhr: function () {
+                        // create an XMLHttpRequest
+                        var xhr = new XMLHttpRequest();
+
+                        // listen to the 'progress' event
+                        xhr.upload.addEventListener('progress', function (evt) {
+
+                            if (evt.lengthComputable) {
+                                // calculate the percentage of upload completed
+                                var percentComplete = evt.loaded / evt.total;
+                                percentComplete = parseInt(percentComplete * 100);
+
+                                // update the Bootstrap progress bar with the new percentage
+                                $('.modelS').html('进度 : ' + percentComplete + '%');
+
+                                // once the upload reaches 100%, set the progress bar text to done
+                                if (percentComplete === 100) {
+                                    $('.modelS').removeClass('processing').addClass('processDone')
+                                    $('.modelS').html('上传完成');
+                                }
+
+                            }
+
+                        }, false);
+
+                        return xhr;
+                    }
+                });
+            }
+
+        });
+
+    })
+
+
+</script>
+
+<%- include('global/xfooter') %>

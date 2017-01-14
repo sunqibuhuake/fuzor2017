@@ -1,0 +1,24 @@
+<div class="col-sm-4 col-md-3">
+
+    <h5><%= model.name %></h5>
+
+    <div class="team-member " style="width: 100%;">
+        <a href="/models/<%= model._id %>">
+            <div class="model-snap"
+                 style="height:120px;background: url('/img/<%= model.snap %>');background-position: center;background-size: cover;background-repeat: no-repeat;">
+            </div>
+        </a>
+        <div class="team-info">
+            <span>分类</span>
+        </div>
+        <ul class="social-icons list-inline list-unstyled">
+            <li><a href="/models/<%= model._id %>/<%= model.share == 'yes' ? 'noshare' : 'share' %>"><i
+                            class="fa fa-share-alt icon-bordered icon-primary icon-xs <%= model.share == 'yes' ? 'icon-sharing' : '' %>"></i></a>
+            </li>
+            <li><a href="/models/<%= model._id %>/delete"><i class="fa fa-trash-o icon-bordered icon-danger icon-xs"></i></a>
+            </li>
+            <%- include('./modelBlock/activeBtn')%>
+
+        </ul>
+    </div>
+</div>

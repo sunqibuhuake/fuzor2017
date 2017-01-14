@@ -1,0 +1,66 @@
+<div id="save-view" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" style="width:55%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">保存视点</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <form id="attachment-form-view" action="/panel/upload/view" method="post" class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">视点名称</label>
+                                <div class="col-md-10">
+                                    <input type="text" class="form-control" name="name">
+                                </div>
+                            </div>
+                            <input style="display: none;" id="attachmentFile-view" name="img">
+                            <input style="display: none;" id="input-modelId-view" name="modelId" value="<%= model._id %>">
+                            <input style="display: none;" id="input-view-objectId" name="objectId" value="">
+                            <input style="display: none;" id="input-pos" name="pos" value="1:1:1">
+                            <input style="display: none;" id="input-dir" name="dir" value="1:1:1">
+                            <input style="display: none;" id="input-vertical" name="vertical" value="10">
+                            <input style="display: none;" id="input-horizontal" name="horizontal" value="10">
+                            <button type="submit" id="realSubmit-view" class="realSubmit btn btn-success"
+                                    style="display: none;">确认添加
+                            </button>
+                        </form>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">视点截图
+                                </br>
+                                <span
+                                        class="custom_process"></span></label>
+                            <div class="col-md-10">
+                                <input id="upload-view-image" type="file" class="form-control"
+                                       name="uploads[]"></br>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary waves-effect waves-light fakeSubmit" data-dismiss="modal">上传</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<script>
+    $(function() {
+
+
+
+        $('#save-view').customSubmit()
+
+        $('#upload-view-image').customUpload('/upload/img', 'attachmentFile-view', function(file) {
+
+
+        })
+    })
+</script>
